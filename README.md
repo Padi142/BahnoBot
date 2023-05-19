@@ -1,4 +1,4 @@
 # BahnoBot
 Harm reduction tracker / discord bot
 
-Using CLEAN architecture 😎
+Using CLEAN architecture 😎 ---tryhard
