@@ -16,5 +16,6 @@ type User struct {
 type UserRepository interface {
 	Create(c context.Context, user *User) error
 	Fetch(c context.Context) ([]User, error)
-	GetByUserID(c context.Context, id string) (User, error)
+	GetByUserID(c context.Context, id string) (*User, error)
+	SetPreferredSubstance(c context.Context, id, newSubstance string) error
 }

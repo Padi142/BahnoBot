@@ -15,10 +15,10 @@ func NewMongoDatabase(env *Env) *mongo.Client {
 
 	dbUser := env.DBUser
 	dbPass := env.DBPass
-	dbName := env.DBName
+	genericDbName := env.GenericDBName
 
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	optionsString := fmt.Sprintf("mongodb+srv://%s:%s@%s.cxodm.mongodb.net/?retryWrites=true&w=majority", dbUser, dbPass, dbName)
+	optionsString := fmt.Sprintf("mongodb+srv://%s:%s@%s.cxodm.mongodb.net/?retryWrites=true&w=majority", dbUser, dbPass, genericDbName)
 	mongoOptions := options.Client().ApplyURI(optionsString).SetServerAPIOptions(serverAPI)
 
 	client, err := mongo.Connect(ctx, mongoOptions)

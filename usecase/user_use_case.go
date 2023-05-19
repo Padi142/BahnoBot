@@ -11,16 +11,22 @@ type userUseCase struct {
 	contextTimeout time.Duration
 }
 
-func NewUserUseCase(userRepository domain.UserRepository, user domain.User) error {
+func NewUserUseCase(userRepository domain.UserRepository, timeout time.Duration) userUseCase {
+	return userUseCase{
+		userRepository: userRepository,
+		contextTimeout: timeout,
+	}
+}
+func (useCase userUseCase) CreateUser(c context.Context, user domain.User) error {
 
-	err := userRepository.Create(context.Background(), &user)
+	err := useCase.userRepository.Create(context.Background(), &user)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (useCase *userUseCase) GetProfileByID(c context.Context, userID string) (*domain.User, error) {
+func (useCase userUseCase) GetProfileByID(c context.Context, userID string) (*domain.User, error) {
 	ctx, cancel := context.WithTimeout(c, useCase.contextTimeout)
 	defer cancel()
 
@@ -29,10 +35,14 @@ func (useCase *userUseCase) GetProfileByID(c context.Context, userID string) (*d
 		return nil, err
 	}
 
+	if user == nil {
+		return nil, nil
+	}
+
 	return &domain.User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
 }
 
-func (useCase *userUseCase) GetOrCreateUser(c context.Context, userID string) (*domain.User, error) {
+func (useCase userUseCase) GetOrCreateUser(c context.Context, userID string) (*domain.User, error) {
 	ctx, cancel := context.WithTimeout(c, useCase.contextTimeout)
 	defer cancel()
 
@@ -50,5 +60,27 @@ func (useCase *userUseCase) GetOrCreateUser(c context.Context, userID string) (*
 	if err != nil {
 		return nil, err
 	}
+	return &domain.User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
+}
+
+func (useCase userUseCase) SetPreferredSubstance(c context.Context, newSubstance, userId string) (*domain.User, error) {
+	ctx, cancel := context.WithTimeout(c, useCase.contextTimeout)
+	defer cancel()
+
+	err := useCase.userRepository.SetPreferredSubstance(context.Background(), userId, newSubstance)
+
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := useCase.userRepository.GetByUserID(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, nil
+	}
+
 	return &domain.User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
 }

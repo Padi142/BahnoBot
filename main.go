@@ -11,12 +11,12 @@ func main() {
 
 	env := bahnakApp.Env
 
-	bahnakApp.Mongo.Database(env.DBName)
+	dbClient := bahnakApp.Mongo.Database(env.SubstanceDBName)
 	defer bahnakApp.CloseDBConnection()
 
 	//discord := bahnakApp.Discord
 
-	bahnakApp.Discord.InitCommands()
+	bahnakApp.Discord.InitCommands(dbClient)
 	err := bahnakApp.Discord.OpenBot()
 	if err != nil {
 		panic(err)
