@@ -16,7 +16,7 @@ func main() {
 
 	//discord := bahnakApp.Discord
 
-	bahnakApp.Discord.InitCommands(dbClient)
+	bahnakApp.Discord.InitCommands(dbClient, env.AppID)
 	err := bahnakApp.Discord.OpenBot()
 	if err != nil {
 		panic(err)

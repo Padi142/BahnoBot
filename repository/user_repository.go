@@ -60,10 +60,10 @@ func (ur *userRepository) GetByUserID(c context.Context, id string) (*domain.Use
 	return &user, err
 }
 
-func (ur *userRepository) SetPreferredSubstance(c context.Context, id, newSubstance string) error {
+func (ur *userRepository) SetPreferredSubstance(c context.Context, userId, newSubstance string) error {
 	collection := ur.database.Collection(ur.collection)
 
-	res, err := collection.UpdateOne(c, bson.M{"user_id": id}, bson.M{"$set": bson.M{"preferred_substance": newSubstance}})
+	res, err := collection.UpdateOne(c, bson.M{"user_id": userId}, bson.M{"$set": bson.M{"preferred_substance": newSubstance}})
 	if err != nil {
 		return err
 	}

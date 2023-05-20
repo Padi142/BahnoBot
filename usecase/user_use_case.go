@@ -63,7 +63,7 @@ func (useCase userUseCase) GetOrCreateUser(c context.Context, userID string) (*d
 	return &domain.User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
 }
 
-func (useCase userUseCase) SetPreferredSubstance(c context.Context, newSubstance, userId string) (*domain.User, error) {
+func (useCase userUseCase) SetPreferredSubstance(c context.Context, userId, newSubstance string) (*domain.User, error) {
 	ctx, cancel := context.WithTimeout(c, useCase.contextTimeout)
 	defer cancel()
 

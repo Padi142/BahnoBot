@@ -27,12 +27,28 @@ func CreateDiscord(token string) *Service {
 
 }
 
-func (d *Service) InitCommands(db *mongo.Database) {
+func (d *Service) InitCommands(db *mongo.Database, appId int) {
 
-	d.BahnoCommand()
-	d.BahnakCommand(db)
-	d.SubstanceCommand(db)
+	err := d.BahnoCommand(appId)
+	if err != nil {
+		log.Println(err)
+	}
+	err = d.BahnakCommand(db, appId)
+	if err != nil {
+		log.Println(err)
+	}
+	err = d.SubstanceCommand(db, appId)
+	if err != nil {
+		log.Println(err)
+	}
+	err = d.BahnimCommand(db, appId)
+	if err != nil {
+		log.Println(err)
+	}
 
+	if err != nil {
+		return
+	}
 	log.Println("Discord commands registered")
 
 }

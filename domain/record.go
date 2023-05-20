@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"bahno_bot/models"
 	"context"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
@@ -9,7 +8,7 @@ import (
 
 type Record struct {
 	ID        primitive.ObjectID `bson:"_id"`
-	Substance models.Substance   `bson:"substance"`
+	Substance string             `bson:"substance"`
 	Time      time.Time          `bson:"time"`
 	CreatedAt time.Time          `bson:"createdAt"`
 }
