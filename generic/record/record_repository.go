@@ -1,7 +1,6 @@
-package repository
+package record
 
 import (
-	"bahno_bot/domain"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -15,14 +14,14 @@ type recordRepository struct {
 	collection string
 }
 
-func NewRecordRepository(db mongo.Database, collection string) domain.RecordRepository {
+func NewRecordRepository(db mongo.Database, collection string) RecordRepository {
 	return &recordRepository{
 		database:   db,
 		collection: collection,
 	}
 }
 
-func (ur *recordRepository) Create(c context.Context, userId string, record domain.Record) error {
+func (ur *recordRepository) Create(c context.Context, userId string, record Record) error {
 	collection := ur.database.Collection(ur.collection)
 
 	filter := bson.M{"user_id": userId}
@@ -39,7 +38,7 @@ func (ur *recordRepository) Create(c context.Context, userId string, record doma
 	return err
 }
 
-func (ur *recordRepository) Fetch(c context.Context, userId string) ([]domain.Record, error) {
+func (ur *recordRepository) Fetch(c context.Context, userId string) ([]Record, error) {
 	collection := ur.database.Collection(ur.collection)
 
 	opts := options.Find().SetProjection(bson.D{{Key: "userId", Value: userId}})
@@ -49,28 +48,28 @@ func (ur *recordRepository) Fetch(c context.Context, userId string) ([]domain.Re
 		return nil, err
 	}
 
-	var records []domain.Record
+	var records []Record
 
 	err = cursor.All(c, &records)
 	if records == nil {
-		return []domain.Record{}, err
+		return []Record{}, err
 	}
 
 	return records, err
 }
 
-func (ur *recordRepository) GetLastRecord(c context.Context, userId string) (domain.Record, error) {
+func (ur *recordRepository) GetLastRecord(c context.Context, userId string) (Record, error) {
 	collection := ur.database.Collection(ur.collection)
 
 	type UserArray struct {
-		Records []*domain.Record `bson:"records"`
+		Records []*Record `bson:"records"`
 	}
 	var userArray UserArray
-	var record domain.Record
+	var record Record
 
 	err := collection.FindOne(c, bson.M{"user_id": userId}).Decode(&userArray)
 	if err != nil {
-		return domain.Record{}, err
+		return Record{}, err
 	}
 
 	sort.Slice(userArray.Records, func(i, j int) bool {

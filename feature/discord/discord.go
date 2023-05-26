@@ -1,7 +1,7 @@
 package discord
 
 import (
-	"bahno_bot/models"
+	"bahno_bot/generic/models"
 	"github.com/bwmarrin/discordgo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"

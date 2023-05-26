@@ -1,8 +1,7 @@
-package repository
+package substance
 
 import (
-	"bahno_bot/domain"
-	"bahno_bot/models"
+	"bahno_bot/generic/models"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,7 +12,7 @@ type substanceRepository struct {
 	collection string
 }
 
-func NewSubstanceRepository(db mongo.Database, collection string) domain.SubstanceRepository {
+func NewSubstanceRepository(db mongo.Database, collection string) SubstanceRepository {
 	return &substanceRepository{
 		database:   db,
 		collection: collection,

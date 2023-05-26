@@ -1,7 +1,6 @@
-package repository
+package user
 
 import (
-	"bahno_bot/domain"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,14 +12,14 @@ type userRepository struct {
 	collection string
 }
 
-func NewUserRepository(db mongo.Database, collection string) domain.UserRepository {
+func NewUserRepository(db mongo.Database, collection string) UserRepository {
 	return &userRepository{
 		database:   db,
 		collection: collection,
 	}
 }
 
-func (ur *userRepository) Create(c context.Context, user *domain.User) error {
+func (ur *userRepository) Create(c context.Context, user *User) error {
 	collection := ur.database.Collection(ur.collection)
 
 	_, err := collection.InsertOne(c, user)
@@ -28,7 +27,7 @@ func (ur *userRepository) Create(c context.Context, user *domain.User) error {
 	return err
 }
 
-func (ur *userRepository) Fetch(c context.Context) ([]domain.User, error) {
+func (ur *userRepository) Fetch(c context.Context) ([]User, error) {
 	collection := ur.database.Collection(ur.collection)
 
 	opts := options.Find().SetProjection(bson.D{{Key: "password", Value: 0}})
@@ -38,20 +37,20 @@ func (ur *userRepository) Fetch(c context.Context) ([]domain.User, error) {
 		return nil, err
 	}
 
-	var users []domain.User
+	var users []User
 
 	err = cursor.All(c, &users)
 	if users == nil {
-		return []domain.User{}, err
+		return []User{}, err
 	}
 
 	return users, err
 }
 
-func (ur *userRepository) GetByUserID(c context.Context, id string) (*domain.User, error) {
+func (ur *userRepository) GetByUserID(c context.Context, id string) (*User, error) {
 	collection := ur.database.Collection(ur.collection)
 
-	var user domain.User
+	var user User
 
 	err := collection.FindOne(c, bson.M{"user_id": id}).Decode(&user)
 	if err != nil {

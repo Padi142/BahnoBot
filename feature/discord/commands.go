@@ -1,9 +1,9 @@
 package discord
 
 import (
-	"bahno_bot/domain"
-	"bahno_bot/repository"
-	"bahno_bot/usecase"
+	"bahno_bot/generic/record"
+	"bahno_bot/generic/substance"
+	"bahno_bot/generic/user"
 	"context"
 	"github.com/bwmarrin/discordgo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -76,9 +76,9 @@ func (d *Service) BahnakCommand(db *mongo.Database, appId int) error {
 			return
 		}
 
-		repo := repository.NewUserRepository(*db, "users")
+		userRepo := user.NewUserRepository(*db, "users")
 
-		userUseCase := usecase.NewUserUseCase(repo, time.Duration(time.Second*10))
+		userUseCase := user.NewUserUseCase(userRepo, time.Duration(time.Second*10))
 
 		userId := i.Member.User.ID
 
@@ -88,8 +88,8 @@ func (d *Service) BahnakCommand(db *mongo.Database, appId int) error {
 			//TODO: handle error
 		}
 		if profile == nil {
-			newProfile := domain.User{UserId: userId, Name: i.Member.User.Username, PreferredSubstance: "bahno", ID: primitive.NewObjectID()}
-			userUseCase.CreateUser(context.Background(), newProfile)
+			newProfile := user.User{UserId: userId, Name: i.Member.User.Username, PreferredSubstance: "bahno", ID: primitive.NewObjectID()}
+			err = userUseCase.CreateUser(context.Background(), newProfile)
 			err = SendInteractionResponse(s, i, "Vytvarim bahnici ucet")
 
 			if err != nil {
@@ -110,13 +110,13 @@ func (d *Service) BahnakCommand(db *mongo.Database, appId int) error {
 }
 
 func (d *Service) SubstanceCommand(db *mongo.Database, appId int) error {
-	userRepo := repository.NewUserRepository(*db, "users")
+	userRepo := user.NewUserRepository(*db, "users")
 
-	userUseCase := usecase.NewUserUseCase(userRepo, time.Duration(time.Second*10))
+	userUseCase := user.NewUserUseCase(userRepo, time.Duration(time.Second*10))
 
-	substanceRepo := repository.NewSubstanceRepository(*db, "substances")
+	substanceRepo := substance.NewSubstanceRepository(*db, "substances")
 
-	substanceRepository := usecase.NewSubstanceUseCase(substanceRepo, time.Duration(time.Second*10))
+	substanceRepository := substance.NewSubstanceUseCase(substanceRepo, time.Duration(time.Second*10))
 
 	substances, err := substanceRepository.GetSubstances(context.Background())
 	if err != nil {
@@ -125,10 +125,10 @@ func (d *Service) SubstanceCommand(db *mongo.Database, appId int) error {
 
 	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(substances))
 
-	for i, substance := range substances {
+	for i, sub := range substances {
 		choices[i] = &discordgo.ApplicationCommandOptionChoice{
-			Name:  substance.Name,
-			Value: substance.Value,
+			Name:  sub.Name,
+			Value: sub.Value,
 		}
 	}
 
@@ -189,8 +189,8 @@ func (d *Service) SubstanceCommand(db *mongo.Database, appId int) error {
 			return
 		}
 		found := false
-		for _, substance := range substances {
-			if substance.Value == value {
+		for _, sub := range substances {
+			if sub.Value == value {
 				_, err = userUseCase.SetPreferredSubstance(context.Background(), userId, value)
 				found = true
 			}
@@ -210,13 +210,13 @@ func (d *Service) SubstanceCommand(db *mongo.Database, appId int) error {
 }
 
 func (d *Service) BahnimCommand(db *mongo.Database, appId int) error {
-	recordRepo := repository.NewRecordRepository(*db, "users")
+	recordRepo := record.NewRecordRepository(*db, "users")
 
-	recordUseCase := usecase.NewRecordUseCase(recordRepo, time.Duration(time.Second*10))
+	recordUseCase := record.NewRecordUseCase(recordRepo, time.Duration(time.Second*10))
 
-	substanceRepo := repository.NewSubstanceRepository(*db, "substances")
+	substanceRepo := substance.NewSubstanceRepository(*db, "substances")
 
-	substanceRepository := usecase.NewSubstanceUseCase(substanceRepo, time.Duration(time.Second*10))
+	substanceRepository := substance.NewSubstanceUseCase(substanceRepo, time.Duration(time.Second*10))
 
 	substances, err := substanceRepository.GetSubstances(context.Background())
 	if err != nil {
@@ -224,10 +224,10 @@ func (d *Service) BahnimCommand(db *mongo.Database, appId int) error {
 	}
 	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(substances))
 
-	for i, substance := range substances {
+	for i, sub := range substances {
 		choices[i] = &discordgo.ApplicationCommandOptionChoice{
-			Name:  substance.Name,
-			Value: substance.Value,
+			Name:  sub.Name,
+			Value: sub.Value,
 		}
 	}
 
@@ -272,17 +272,17 @@ func (d *Service) BahnimCommand(db *mongo.Database, appId int) error {
 		}
 
 		found := false
-		for _, substance := range substances {
-			if substance.Value == value {
+		for _, sub := range substances {
+			if sub.Value == value {
 
-				newRecord := domain.Record{
+				newRecord := record.Record{
 					ID:        primitive.NewObjectID(),
 					Substance: value,
 					Time:      time.Now(),
 					CreatedAt: time.Now(),
 				}
 
-				record, err := recordUseCase.CreateNewRecord(context.Background(), i.Member.User.ID, newRecord)
+				rec, err := recordUseCase.CreateNewRecord(context.Background(), i.Member.User.ID, newRecord)
 				if err != nil {
 					err = SendInteractionResponse(s, i, "Pri bahneni vznikla chyba. Pardor")
 					log.Println(err)
@@ -292,9 +292,9 @@ func (d *Service) BahnimCommand(db *mongo.Database, appId int) error {
 					}
 					return
 				}
-				formattedTime := record.CreatedAt.Format("15:04 02.01")
-				//timeStamp := fmt.Sprintf("<t:%d, d>", record.CreatedAt.Unix())
-				err = SendInteractionResponse(s, i, "Pridano bahneni: **"+record.Substance+"** v: **"+formattedTime+"**")
+				formattedTime := rec.CreatedAt.Format("15:04 02.01")
+				//timeStamp := fmt.Sprintf("<t:%d, d>", rec.CreatedAt.Unix())
+				err = SendInteractionResponse(s, i, "Pridano bahneni: **"+rec.Substance+"** v: **"+formattedTime+"**")
 				if err != nil {
 					log.Println(err)
 

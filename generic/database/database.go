@@ -1,8 +1,11 @@
 package database
 
 import (
+	"bahno_bot/app"
 	"context"
 	"errors"
+	"fmt"
+	"log"
 	"reflect"
 	"time"
 
@@ -17,6 +20,45 @@ import (
 type Database interface {
 	Collection(string) Collection
 	Client() Client
+}
+
+func NewMongoDatabase(env *app.Env) *mongo.Client {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	dbUser := env.DBUser
+	dbPass := env.DBPass
+	genericDbName := env.GenericDBName
+
+	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	optionsString := fmt.Sprintf("mongodb+srv://%s:%s@%s.cxodm.mongodb.net/?retryWrites=true&w=majority", dbUser, dbPass, genericDbName)
+	mongoOptions := options.Client().ApplyURI(optionsString).SetServerAPIOptions(serverAPI)
+
+	client, err := mongo.Connect(ctx, mongoOptions)
+	if err != nil {
+		panic(err)
+	}
+
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Connected to MongoDB!")
+
+	return client
+}
+
+func CloseMongoDBConnection(client *mongo.Client) {
+	if client == nil {
+		return
+	}
+
+	err := client.Disconnect(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Connection to MongoDB closed.")
 }
 
 type Collection interface {

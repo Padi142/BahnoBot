@@ -1,7 +1,7 @@
-package domain
+package substance
 
 import (
-	"bahno_bot/models"
+	"bahno_bot/generic/models"
 	"context"
 )
 

@@ -1,31 +1,30 @@
-package usecase
+package record
 
 import (
-	"bahno_bot/domain"
 	"context"
 	"time"
 )
 
-type recordUseCase struct {
-	recordRepository domain.RecordRepository
+type UseCase struct {
+	recordRepository RecordRepository
 	contextTimeout   time.Duration
 }
 
-func NewRecordUseCase(recordRepository domain.RecordRepository, timeout time.Duration) recordUseCase {
-	return recordUseCase{
+func NewRecordUseCase(recordRepository RecordRepository, timeout time.Duration) UseCase {
+	return UseCase{
 		recordRepository: recordRepository,
 		contextTimeout:   timeout,
 	}
 }
 
-func CreateRecordUseCase(recordRepository domain.RecordRepository, record domain.Record, userId string) error {
+func CreateRecordUseCase(recordRepository RecordRepository, record Record, userId string) error {
 	err := recordRepository.Create(context.Background(), userId, record)
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (useCase recordUseCase) GetLatestRecord(c context.Context, userId string) (*domain.Record, error) {
+func (useCase UseCase) GetLatestRecord(c context.Context, userId string) (*Record, error) {
 
 	record, err := useCase.recordRepository.GetLastRecord(c, userId)
 	if err != nil {
@@ -35,7 +34,7 @@ func (useCase recordUseCase) GetLatestRecord(c context.Context, userId string) (
 	return &record, nil
 }
 
-func (useCase recordUseCase) CreateNewRecord(c context.Context, userId string, record domain.Record) (*domain.Record, error) {
+func (useCase UseCase) CreateNewRecord(c context.Context, userId string, record Record) (*Record, error) {
 
 	err := useCase.recordRepository.Create(c, userId, record)
 	if err != nil {

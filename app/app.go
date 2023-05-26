@@ -1,7 +1,8 @@
 package app
 
 import (
-	"bahno_bot/services/discord"
+	"bahno_bot/feature/discord"
+	"bahno_bot/generic/database"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -14,11 +15,11 @@ type Application struct {
 func App() Application {
 	app := Application{}
 	app.Env = NewEnv()
-	app.Mongo = NewMongoDatabase(app.Env)
+	app.Mongo = database.NewMongoDatabase(app.Env)
 	app.Discord = discord.CreateDiscord(app.Env.DiscordToken)
 	return app
 }
 
 func (app *Application) CloseDBConnection() {
-	CloseMongoDBConnection(app.Mongo)
+	database.CloseMongoDBConnection(app.Mongo)
 }
