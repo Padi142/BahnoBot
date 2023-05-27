@@ -73,7 +73,7 @@ func (ur *recordRepository) GetLastRecord(c context.Context, userId string) (Rec
 	}
 
 	sort.Slice(userArray.Records, func(i, j int) bool {
-		return userArray.Records[i].Time.Before(userArray.Records[j].Time)
+		return userArray.Records[i].Time.After(userArray.Records[j].Time)
 	})
 
 	record = *userArray.Records[0]

@@ -15,7 +15,7 @@ type Application struct {
 func App() Application {
 	app := Application{}
 	app.Env = NewEnv()
-	app.Mongo = database.NewMongoDatabase(app.Env)
+	app.Mongo = database.NewMongoDatabase(app.Env.DBUser, app.Env.DBPass, app.Env.GenericDBName)
 	app.Discord = discord.CreateDiscord(app.Env.DiscordToken)
 	return app
 }

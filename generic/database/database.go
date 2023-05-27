@@ -1,7 +1,6 @@
 package database
 
 import (
-	"bahno_bot/app"
 	"context"
 	"errors"
 	"fmt"
@@ -22,13 +21,13 @@ type Database interface {
 	Client() Client
 }
 
-func NewMongoDatabase(env *app.Env) *mongo.Client {
+func NewMongoDatabase(user, password, genericName string) *mongo.Client {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	dbUser := env.DBUser
-	dbPass := env.DBPass
-	genericDbName := env.GenericDBName
+	dbUser := user
+	dbPass := password
+	genericDbName := genericName
 
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	optionsString := fmt.Sprintf("mongodb+srv://%s:%s@%s.cxodm.mongodb.net/?retryWrites=true&w=majority", dbUser, dbPass, genericDbName)

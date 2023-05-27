@@ -29,19 +29,14 @@ func CreateDiscord(token string) *Service {
 
 func (d *Service) InitCommands(db *mongo.Database, appId int) {
 
+	//Clears old commands
+	//d.ClearCommands()
+
 	err := d.BahnoCommand(appId)
-	if err != nil {
-		log.Println(err)
-	}
 	err = d.BahnakCommand(db, appId)
-	if err != nil {
-		log.Println(err)
-	}
 	err = d.SubstanceCommand(db, appId)
-	if err != nil {
-		log.Println(err)
-	}
 	err = d.BahnimCommand(db, appId)
+	err = d.LastBahneni(db, appId)
 	if err != nil {
 		log.Println(err)
 	}

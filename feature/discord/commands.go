@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"bahno_bot/generic/models"
 	"bahno_bot/generic/record"
 	"bahno_bot/generic/substance"
 	"bahno_bot/generic/user"
@@ -35,6 +36,7 @@ func (d *Service) BahnoCommand(appId int) error {
 		if i.ApplicationCommandData().Name != command.Name {
 			return
 		}
+		LogCommandUse(i.Member.User.Username, command.Name)
 
 		err := s.InteractionRespond(
 			i.Interaction,
@@ -53,6 +55,20 @@ func (d *Service) BahnoCommand(appId int) error {
 	return nil
 }
 
+func (d *Service) ClearCommands() {
+	commands, err := d.discord.Session.ApplicationCommands(d.discord.Session.State.User.ID, "")
+	if err != nil {
+		panic(err)
+	}
+
+	// Iterate through the commands and delete them
+	for _, command := range commands {
+		err = d.discord.Session.ApplicationCommandDelete(d.discord.Session.State.User.ID, "", command.ID)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
 func (d *Service) BahnakCommand(db *mongo.Database, appId int) error {
 	command := &discordgo.ApplicationCommand{
 		Name:        "bahnak",
@@ -75,6 +91,7 @@ func (d *Service) BahnakCommand(db *mongo.Database, appId int) error {
 		if i.ApplicationCommandData().Name != command.Name {
 			return
 		}
+		LogCommandUse(i.Member.User.Username, command.Name)
 
 		userRepo := user.NewUserRepository(*db, "users")
 
@@ -163,6 +180,7 @@ func (d *Service) SubstanceCommand(db *mongo.Database, appId int) error {
 		if i.ApplicationCommandData().Name != command.Name {
 			return
 		}
+		LogCommandUse(i.Member.User.Username, command.Name)
 
 		userId := i.Member.User.ID
 
@@ -263,10 +281,16 @@ func (d *Service) BahnimCommand(db *mongo.Database, appId int) error {
 		if i.ApplicationCommandData().Name != command.Name {
 			return
 		}
-		value := ""
-		if i.ApplicationCommandData().Options == nil {
-			value = "bahno"
-		} else {
+		LogCommandUse(i.Member.User.Username, command.Name)
+
+		userRepo := user.NewUserRepository(*db, "users")
+
+		userUseCase := user.NewUserUseCase(userRepo, time.Duration(time.Second*10))
+
+		usr, err := userUseCase.GetProfileByID(context.Background(), i.Member.User.ID)
+		value := usr.PreferredSubstance
+
+		if i.ApplicationCommandData().Options != nil {
 
 			value = i.ApplicationCommandData().Options[0].Value.(string)
 		}
@@ -277,7 +301,7 @@ func (d *Service) BahnimCommand(db *mongo.Database, appId int) error {
 
 				newRecord := record.Record{
 					ID:        primitive.NewObjectID(),
-					Substance: value,
+					Substance: sub.Name,
 					Time:      time.Now(),
 					CreatedAt: time.Now(),
 				}
@@ -292,9 +316,9 @@ func (d *Service) BahnimCommand(db *mongo.Database, appId int) error {
 					}
 					return
 				}
-				formattedTime := rec.CreatedAt.Format("15:04 02.01")
+				//formattedTime := rec.CreatedAt.Format("15:04 02.01.2006")
 				//timeStamp := fmt.Sprintf("<t:%d, d>", rec.CreatedAt.Unix())
-				err = SendInteractionResponse(s, i, "Pridano bahneni: **"+rec.Substance+"** v: **"+formattedTime+"**")
+				err = SendInteractionResponse(s, i, "Pridano bahneni: **"+rec.Substance+"** "+GetTimeStamp(rec.CreatedAt, "R"))
 				if err != nil {
 					log.Println(err)
 
@@ -320,6 +344,74 @@ func (d *Service) BahnimCommand(db *mongo.Database, appId int) error {
 
 }
 
+func (d *Service) LastBahneni(db *mongo.Database, appId int) error {
+	recordRepo := record.NewRecordRepository(*db, "users")
+
+	recordUseCase := record.NewRecordUseCase(recordRepo, time.Duration(time.Second*10))
+
+	substanceRepository := substance.NewSubstanceRepository(*db, "substances")
+
+	substanceUseCase := substance.NewSubstanceUseCase(substanceRepository, time.Duration(time.Second*10))
+
+	command := &discordgo.ApplicationCommand{
+		Name:        "last_bahneni",
+		Description: "Prints your last record",
+	}
+	_, err := d.discord.Session.ApplicationCommandCreate(
+		strconv.Itoa(appId),
+		"",
+		command,
+	)
+
+	if err != nil {
+		return err
+	}
+	d.discord.Session.AddHandler(func(
+		s *discordgo.Session,
+		i *discordgo.InteractionCreate,
+	) {
+		//Only handle this command
+		if i.ApplicationCommandData().Name != command.Name {
+			return
+		}
+		LogCommandUse(i.Member.User.Username, command.Name)
+
+		rec, err := recordUseCase.GetLatestRecord(context.Background(), i.Member.User.ID)
+		if err != nil {
+			err = SendInteractionResponse(s, i, err.Error())
+			return
+		}
+
+		substances, err := substanceUseCase.GetSubstances(context.Background())
+
+		embed := &discordgo.MessageEmbed{
+			Title: "Posledni bahno:",
+			Color: 0x00ff00,
+			Fields: []*discordgo.MessageEmbedField{
+				{
+					Name:   "Substance: ",
+					Value:  GetSubstanceName(rec.Substance, substances),
+					Inline: true,
+				},
+				{
+					Name:   "Date: ",
+					Value:  GetTimeStamp(rec.CreatedAt, "F"),
+					Inline: true,
+				},
+				{
+					Name:   "Dose: ",
+					Value:  "vela",
+					Inline: true,
+				},
+			},
+		}
+
+		err = SendInteractionResponseEmbed(s, i, embed)
+	})
+	return nil
+
+}
+
 func SendInteractionResponse(s *discordgo.Session, i *discordgo.InteractionCreate, message string) error {
 	err := s.InteractionRespond(
 		i.Interaction,
@@ -335,4 +427,38 @@ func SendInteractionResponse(s *discordgo.Session, i *discordgo.InteractionCreat
 		return err
 	}
 	return nil
+}
+
+func SendInteractionResponseEmbed(s *discordgo.Session, i *discordgo.InteractionCreate, embed *discordgo.MessageEmbed) error {
+	err := s.InteractionRespond(
+		i.Interaction,
+		&discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Embeds: []*discordgo.MessageEmbed{embed},
+			},
+		},
+	)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetTimeStamp(dateTime time.Time, stampType string) string {
+	return "<t:" + strconv.FormatInt(dateTime.Unix(), 10) + ":" + stampType + ">"
+}
+
+func GetSubstanceName(substance string, substances []models.Substance) string {
+	for _, sub := range substances {
+		if sub.Value == substance {
+			return sub.Name
+		}
+	}
+	return ""
+}
+
+func LogCommandUse(userName, commandName string) {
+	log.Println("User " + userName + " ran command " + commandName)
 }
