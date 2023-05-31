@@ -11,6 +11,7 @@ type Record struct {
 	Substance string             `bson:"substance"`
 	Time      time.Time          `bson:"time"`
 	CreatedAt time.Time          `bson:"createdAt"`
+	Amount	  int    			 `bson:"amount"`
 }
 
 type RecordRepository interface {
