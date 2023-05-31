@@ -6,12 +6,14 @@ import (
 	"bahno_bot/generic/substance"
 	"bahno_bot/generic/user"
 	"context"
-	"github.com/bwmarrin/discordgo"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	"fmt"
 	"log"
 	"strconv"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func (d *Service) BahnoCommand(appId int) error {
@@ -319,10 +321,9 @@ func (d *Service) BahnimCommand(db *mongo.Database, appId int) error {
 		found := false
 		for _, sub := range substances {
 			if sub.Value == substance {
-
 				newRecord := record.Record{
 					ID:        primitive.NewObjectID(),
-					Substance: sub.Name,
+					Substance: sub.Value,
 					Time:      time.Now(),
 					CreatedAt: time.Now(),
 					Amount: int(amount),
@@ -422,7 +423,7 @@ func (d *Service) LastBahneni(db *mongo.Database, appId int) error {
 				},
 				{
 					Name:   "Dose: ",
-					Value:  "vela",
+					Value:  fmt.Sprintf("%dg", rec.Amount),
 					Inline: true,
 				},
 			},
