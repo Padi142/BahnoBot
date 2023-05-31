@@ -6,12 +6,14 @@ import (
 	"bahno_bot/generic/substance"
 	"bahno_bot/generic/user"
 	"context"
-	"github.com/bwmarrin/discordgo"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	"fmt"
 	"log"
 	"strconv"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func (d *Service) BahnoCommand(appId int) error {
@@ -253,13 +255,17 @@ func (d *Service) BahnimCommand(db *mongo.Database, appId int) error {
 		Name:        "bahnim",
 		Description: "Zacne bahnit",
 		Options: []*discordgo.ApplicationCommandOption{
-
 			{
 				Type:        discordgo.ApplicationCommandOptionString,
-				Name:        "bahnim",
-				Description: "Vyber s jakou substanci chces bahnit",
-
+				Name:        "substance",
+				Description: "Vyber si jakou substanci chceš bahnit",
 				Choices: choices,
+			},
+			{
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Name:        "amount",
+				Description: "Zadej množství v gramech",
+				Required: false,
 			},
 		},
 	}
@@ -288,22 +294,39 @@ func (d *Service) BahnimCommand(db *mongo.Database, appId int) error {
 		userUseCase := user.NewUserUseCase(userRepo, time.Duration(time.Second*10))
 
 		usr, err := userUseCase.GetProfileByID(context.Background(), i.Member.User.ID)
-		value := usr.PreferredSubstance
 
-		if i.ApplicationCommandData().Options != nil {
+		if err != nil {
+			SendInteractionResponse(s, i, "Neexistujes 💀")
+			return
+		}
 
-			value = i.ApplicationCommandData().Options[0].Value.(string)
+		substance := usr.PreferredSubstance
+		amount := 0
+
+		options := i.ApplicationCommandData().Options
+
+		optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
+		for _, opt := range options {
+			optionMap[opt.Name] = opt
+		}
+
+		if opt, ok := optionMap["substance"]; ok {
+			substance = opt.StringValue()
+		}
+
+		if opt, ok := optionMap["amount"]; ok {
+			amount = int(opt.IntValue())
 		}
 
 		found := false
 		for _, sub := range substances {
-			if sub.Value == value {
-
+			if sub.Value == substance {
 				newRecord := record.Record{
 					ID:        primitive.NewObjectID(),
-					Substance: sub.Name,
+					Substance: sub.Value,
 					Time:      time.Now(),
 					CreatedAt: time.Now(),
+					Amount: int(amount),
 				}
 
 				rec, err := recordUseCase.CreateNewRecord(context.Background(), i.Member.User.ID, newRecord)
@@ -400,7 +423,7 @@ func (d *Service) LastBahneni(db *mongo.Database, appId int) error {
 				},
 				{
 					Name:   "Dose: ",
-					Value:  "vela",
+					Value:  fmt.Sprintf("%dg", rec.Amount),
 					Inline: true,
 				},
 			},
