@@ -3,9 +3,10 @@ package handlers
 import (
 	"bahno_bot/generic/models"
 	"bahno_bot/generic/user"
-	"github.com/gofiber/fiber/v2"
 	"log"
 	"net/http"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 // GetUserByDiscordId godoc

@@ -6,11 +6,12 @@ import (
 	"bahno_bot/generic/record"
 	"bahno_bot/generic/substance"
 	"bahno_bot/generic/user"
+	"log"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	fiberSwagger "github.com/swaggo/fiber-swagger"
 	"gorm.io/gorm"
-	"log"
-	"time"
 )
 
 // @title Swagger Example API

@@ -3,6 +3,7 @@ package routes
 import (
 	"bahno_bot/feature/api/handlers"
 	"bahno_bot/generic/user"
+
 	"github.com/gofiber/fiber/v2"
 )
 
