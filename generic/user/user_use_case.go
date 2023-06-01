@@ -17,17 +17,20 @@ func NewUserUseCase(userRepository UserRepository, timeout time.Duration) UseCas
 		contextTimeout: timeout,
 	}
 }
-func (useCase UseCase) CreateUser(user models.User) error {
+func (useCase UseCase) CreateUser(c context.Context, user models.User) error {
 
-	err := useCase.userRepository.Create(&user)
+	err := useCase.userRepository.Create(context.Background(), &user)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (useCase UseCase) GetProfileByID(userID uint) (*models.User, error) {
-	user, err := useCase.userRepository.GetUser(userID)
+func (useCase UseCase) GetProfileByID(c context.Context, userID string) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(c, useCase.contextTimeout)
+	defer cancel()
+
+	user, err := useCase.userRepository.GetByUserID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -36,51 +39,41 @@ func (useCase UseCase) GetProfileByID(userID uint) (*models.User, error) {
 		return nil, nil
 	}
 
-	return user, nil
+	return &models.User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
 }
 
-func (useCase UseCase) GetUserByDiscordId(userID string) (*models.User, error) {
+func (useCase UseCase) GetOrCreateUser(c context.Context, userID string) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(c, useCase.contextTimeout)
+	defer cancel()
 
-	user, err := useCase.userRepository.GetUserByDiscordId(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	if user == nil {
-		return nil, nil
-	}
-
-	return user, nil
-}
-
-func (useCase UseCase) GetOrCreateUser(userID uint) (*models.User, error) {
-
-	user, err := useCase.userRepository.GetUser(userID)
+	user, err := useCase.userRepository.GetByUserID(ctx, userID)
 	if err == nil {
-		return user, nil
+		return &models.User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
 	}
 
-	err = useCase.userRepository.Create(&models.User{ID: userID})
+	err = useCase.userRepository.Create(ctx, &models.User{UserId: userID})
 	if err != nil {
 		return nil, err
 	}
 
-	user, err = useCase.userRepository.GetUser(userID)
+	user, err = useCase.userRepository.GetByUserID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-
-	return user, nil
+	return &models.User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
 }
 
-func (useCase UseCase) SetPreferredSubstance(userId, substanceId uint) (*models.User, error) {
-	err := useCase.userRepository.SetPreferredSubstance(context.Background(), userId, substanceId)
+func (useCase UseCase) SetPreferredSubstance(c context.Context, userId, newSubstance string) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(c, useCase.contextTimeout)
+	defer cancel()
+
+	err := useCase.userRepository.SetPreferredSubstance(context.Background(), userId, newSubstance)
 
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := useCase.userRepository.GetUser(userId)
+	user, err := useCase.userRepository.GetByUserID(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -89,5 +82,5 @@ func (useCase UseCase) SetPreferredSubstance(userId, substanceId uint) (*models.
 		return nil, nil
 	}
 
-	return user, nil
+	return &models.User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
 }

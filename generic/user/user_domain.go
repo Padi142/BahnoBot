@@ -6,9 +6,8 @@ import (
 )
 
 type UserRepository interface {
-	Create(user *models.User) error
-	GetAll() ([]models.User, error)
-	GetUser(id uint) (*models.User, error)
-	GetUserByDiscordId(id string) (*models.User, error)
-	SetPreferredSubstance(c context.Context, userId, substanceId uint) error
+	Create(c context.Context, user *models.User) error
+	Fetch(c context.Context) ([]models.User, error)
+	GetByUserID(c context.Context, id string) (*models.User, error)
+	SetPreferredSubstance(c context.Context, id, newSubstance string) error
 }

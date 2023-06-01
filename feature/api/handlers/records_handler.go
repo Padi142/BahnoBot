@@ -3,9 +3,10 @@ package handlers
 import (
 	"bahno_bot/generic/record"
 	"context"
-	"github.com/gofiber/fiber/v2"
 	"log"
 	"net/http"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 // GetLastRecord godoc
