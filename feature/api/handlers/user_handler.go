@@ -31,7 +31,15 @@ import (
 //	}
 //}
 
-// GetBooks is handler/controller which lists all Books from the BookShop
+// GetUser godoc
+// @Summary gets user by id
+// @Description Gets the basic user info by their
+// @Tags root
+// @Produce json
+// @Param userId query string true "ID of the user to retrieve"
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /api/user [get]
 func GetUser(useCase user.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		userId := c.Query("userId")

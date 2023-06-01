@@ -1,15 +1,30 @@
-package main
+package fiber_feature
 
 import (
+	_ "bahno_bot/docs"
 	"bahno_bot/feature/api/routes"
 	"bahno_bot/generic/user"
 	"github.com/gofiber/fiber/v2"
+	fiberSwagger "github.com/swaggo/fiber-swagger"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"time"
 )
 
-func apiService(db *mongo.Database) {
+// @title Swagger Example API
+// @version 1.0
+// @description This is a sample server Bahno server.
+// @termsOfService http://swagger.io/terms/
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @host localhost:8081
+// @BasePath /
+// @schemes http
+func NewApiService(db *mongo.Database) {
+	log.Println("Creating fiber api service")
 	app := fiber.New()
 
 	userRepo := user.NewUserRepository(*db, "users")
@@ -19,7 +34,11 @@ func apiService(db *mongo.Database) {
 	api := app.Group("/api")
 	routes.UserRoter(api, userUseCase)
 
-	defer cancel()
+	app.Get("/swagger/*", fiberSwagger.WrapHandler)
+	go ApiListen(app)
 
+}
+
+func ApiListen(app *fiber.App) {
 	log.Fatal(app.Listen(":8081"))
 }

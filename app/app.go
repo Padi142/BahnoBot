@@ -9,8 +9,8 @@ import (
 )
 
 type Application struct {
-	Env     *Env
-	Db 		*gorm.DB
+	Env *Env
+	Db  *gorm.DB
 	// Discord *discord.Service
 }
 
@@ -21,7 +21,6 @@ func App() Application {
 	app.Db = database.NewDatabase(app.Env.DBHost, app.Env.DBUser, app.Env.DBPass, app.Env.DBName, uint(port))
 
 	// app.Discord = discord.CreateDiscord(app.Env.DiscordToken)
-
 
 	// recordRepo := record.NewRecordRepository(app.Db)
 	// record := models.Record{Amount: 69, SubstanceID: 2, UserID: 1, Time: time.Now()}
