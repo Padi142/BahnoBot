@@ -3,6 +3,8 @@ package fiber_feature
 import (
 	_ "bahno_bot/docs"
 	"bahno_bot/feature/api/routes"
+	"bahno_bot/generic/record"
+	"bahno_bot/generic/substance"
 	"bahno_bot/generic/user"
 	"github.com/gofiber/fiber/v2"
 	fiberSwagger "github.com/swaggo/fiber-swagger"
@@ -28,11 +30,18 @@ func NewApiService(db *mongo.Database) {
 	app := fiber.New()
 
 	userRepo := user.NewUserRepository(*db, "users")
-
 	userUseCase := user.NewUserUseCase(userRepo, time.Duration(time.Second*10))
 
+	recordRepo := record.NewRecordRepository(*db, "users")
+	recordUseCase := record.NewRecordUseCase(recordRepo, time.Duration(time.Second*10))
+
+	substancesRepo := substance.NewSubstanceRepository(*db, "substances")
+	substanceUseCase := substance.NewSubstanceUseCase(substancesRepo, time.Duration(time.Second*10))
+
 	api := app.Group("/api")
-	routes.UserRoter(api, userUseCase)
+	routes.UserRouter(api, userUseCase)
+	routes.RecordsRoute(api, recordUseCase)
+	routes.SubstancesRouter(api, substanceUseCase)
 
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 	go ApiListen(app)

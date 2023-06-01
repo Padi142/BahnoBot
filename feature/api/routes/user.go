@@ -6,7 +6,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func UserRoter(app fiber.Router, useCase user.UseCase) {
+func UserRouter(app fiber.Router, useCase user.UseCase) {
 	app.Get("/user", handlers.GetUser(useCase))
+	app.Put("/user", handlers.UpdateUser(useCase))
 	//app.Post("/user", handlers.CreateUSer(service))
 }

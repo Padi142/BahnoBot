@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bahno_bot/generic/models"
 	"bahno_bot/generic/user"
 	"context"
 	"github.com/gofiber/fiber/v2"
@@ -8,32 +9,9 @@ import (
 	"net/http"
 )
 
-//// AddBook is handler/controller which creates Books in the BookShop
-//func CreateUser(useCase user.UseCase) fiber.Handler {
-//	return func(c *fiber.Ctx) error {
-//		var requestBody entities.Book
-//		err := c.BodyParser(&requestBody)
-//		if err != nil {
-//			c.Status(http.StatusBadRequest)
-//			return c.JSON(presenter.BookErrorResponse(err))
-//		}
-//		if requestBody.Author == "" || requestBody.Title == "" {
-//			c.Status(http.StatusInternalServerError)
-//			return c.JSON(presenter.BookErrorResponse(errors.New(
-//				"Please specify title and author")))
-//		}
-//		result, err := service.InsertBook(&requestBody)
-//		if err != nil {
-//			c.Status(http.StatusInternalServerError)
-//			return c.JSON(presenter.BookErrorResponse(err))
-//		}
-//		return c.JSON(presenter.BookSuccessResponse(result))
-//	}
-//}
-
 // GetUser godoc
 // @Summary gets user by id
-// @Description Gets the basic user info by their
+// @Description Gets the basic user info by their id
 // @Tags root
 // @Produce json
 // @Param userId query string true "ID of the user to retrieve"
@@ -60,6 +38,42 @@ func GetUser(useCase user.UseCase) fiber.Handler {
 			})
 
 		}
+		return c.JSON(fiber.Map{
+			"user": userResult,
+		})
+	}
+}
+
+// UpdateUser godoc
+// @Summary updates user with incoming json struct
+// @Description Send new user struct to update user in db
+// @Tags root
+// @Produce json
+// @Body user query models.User{} true "new user body"
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /api/user [put]
+func UpdateUser(useCase user.UseCase) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		log.Println("API CALL: UpdateUser ")
+
+		usr := models.User{}
+
+		err := c.BodyParser(&usr)
+
+		if err != nil {
+			return c.JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+		userResult, err := useCase.SetPreferredSubstance(context.Background(), usr.UserId, usr.PreferredSubstance)
+		if err != nil {
+			return c.JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
 		return c.JSON(fiber.Map{
 			"user": userResult,
 		})

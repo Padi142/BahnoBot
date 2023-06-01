@@ -18,7 +18,7 @@ const docTemplate = `{
     "paths": {
         "/api/user": {
             "get": {
-                "description": "Gets the basic user info by their",
+                "description": "Gets the basic user info by their id",
                 "produces": [
                     "application/json",
                     "application/json"
@@ -36,6 +36,85 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Send new user struct to update user in db",
+                "produces": [
+                    "application/json",
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "updates user with incoming json struct",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/record/last": {
+            "get": {
+                "description": "Gets the last record from records for given user id and substance id, if no substance id provided, gets last record for all substances",
+                "produces": [
+                    "application/json",
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "gets last record for given user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of the user to retrieve last record",
+                        "name": "userId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "value of the substance",
+                        "name": "substance",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/substances/all": {
+            "get": {
+                "description": "Gets al substances that are by default accessible to user",
+                "produces": [
+                    "application/json",
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "gets all substances from db",
                 "responses": {
                     "200": {
                         "description": "OK",

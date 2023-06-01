@@ -2,38 +2,42 @@ package user
 
 import (
 	"bahno_bot/generic/models"
+	"context"
+
+	"bahno_bot/generic/models"
+
 	"gorm.io/gorm"
 )
 
 type userRepository struct {
-	database *gorm.DB
+	database gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) UserRepository {
-	return &userRepository {
+func NewUserRepository(db gorm.DB) UserRepository {
+	return &userRepository{
 		database: db,
 	}
 }
 
-func (ur *userRepository) Create(user *models.User) error {
-	result := ur.database.Create(user);
+func (ur *userRepository) Create(c context.Context, user *models.User) error {
+	result := ur.database.Create(user)
 
 	return result.Error
 }
 
-func (ur *userRepository) GetAll() (users []models.User, err error) {
-	ur.database.Preload("PreferredSubstance").Find(&users)
+func (ur *userRepository) GetAll(c context.Context) (users []models.User, err error) {
+	ur.database.Find(&users)
 
 	return
 }
 
-func (ur *userRepository) GetUser(id uint) (user *models.User, err error) {
-	ur.database.Preload("PreferredSubstance").First(&user, id)
+func (ur *userRepository) GetUser(c context.Context, id uint) (user *models.User, err error) {
+	ur.database.First(user, id)
 
-	return 
+	return
 }
 
-func (ur *userRepository) SetPreferredSubstance(userId, substanceId uint) error {
+func (ur *userRepository) SetPreferredSubstance(c context.Context, userId, substanceId uint) error {
 	ur.database.Model(&models.User{}).Where("id = ?", userId).Update("preferred_substance_id", substanceId)
 
 	return nil

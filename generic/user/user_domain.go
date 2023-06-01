@@ -2,8 +2,8 @@ package user
 
 import (
 	"bahno_bot/generic/models"
+	"context"
 )
-
 
 type UserRepository interface {
 	Create(user *models.User) error
