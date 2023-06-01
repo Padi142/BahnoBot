@@ -1,0 +1,25 @@
+info:
+  contact: {}
+paths:
+  /api/user:
+    get:
+      description: Gets the basic user info by their
+      parameters:
+      - description: ID of the user to retrieve
+        in: query
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: gets user by id
+      tags:
+      - root
+swagger: "2.0"
