@@ -14,6 +14,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"gorm.io/gorm"
 )
 
 func (d *Service) BahnoCommand(appId int) error {
@@ -321,8 +322,7 @@ func (d *Service) BahnimCommand(db *mongo.Database, appId int) error {
 		found := false
 		for _, sub := range substances {
 			if sub.Value == substance {
-				newRecord := record.Record{
-					ID:        primitive.NewObjectID(),
+				newRecord := models.Record{
 					Substance: sub.Value,
 					Time:      time.Now(),
 					CreatedAt: time.Now(),
@@ -341,7 +341,7 @@ func (d *Service) BahnimCommand(db *mongo.Database, appId int) error {
 				}
 				//formattedTime := rec.CreatedAt.Format("15:04 02.01.2006")
 				//timeStamp := fmt.Sprintf("<t:%d, d>", rec.CreatedAt.Unix())
-				err = SendInteractionResponse(s, i, "Pridano bahneni: **"+rec.Substance+"** "+GetTimeStamp(rec.CreatedAt, "R"))
+				err = SendInteractionResponse(s, i, "Pridano bahneni: **"+ rec.Substance +"** "+GetTimeStamp(rec.Time, "R"))
 				if err != nil {
 					log.Println(err)
 
@@ -367,7 +367,7 @@ func (d *Service) BahnimCommand(db *mongo.Database, appId int) error {
 
 }
 
-func (d *Service) LastBahneni(db *mongo.Database, appId int) error {
+func (d *Service) LastBahneni(db *gorm.DB, appId int) error {
 	recordRepo := record.NewRecordRepository(*db, "users")
 
 	recordUseCase := record.NewRecordUseCase(recordRepo, time.Duration(time.Second*10))

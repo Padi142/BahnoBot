@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"time"
+	"bahno_bot/generic/models"
 )
 
 type UseCase struct {
@@ -16,7 +17,7 @@ func NewUserUseCase(userRepository UserRepository, timeout time.Duration) UseCas
 		contextTimeout: timeout,
 	}
 }
-func (useCase UseCase) CreateUser(c context.Context, user User) error {
+func (useCase UseCase) CreateUser(c context.Context, user models.User) error {
 
 	err := useCase.userRepository.Create(context.Background(), &user)
 	if err != nil {
@@ -25,7 +26,7 @@ func (useCase UseCase) CreateUser(c context.Context, user User) error {
 	return nil
 }
 
-func (useCase UseCase) GetProfileByID(c context.Context, userID string) (*User, error) {
+func (useCase UseCase) GetProfileByID(c context.Context, userID string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(c, useCase.contextTimeout)
 	defer cancel()
 
@@ -41,7 +42,7 @@ func (useCase UseCase) GetProfileByID(c context.Context, userID string) (*User, 
 	return &User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
 }
 
-func (useCase UseCase) GetOrCreateUser(c context.Context, userID string) (*User, error) {
+func (useCase UseCase) GetOrCreateUser(c context.Context, userID string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(c, useCase.contextTimeout)
 	defer cancel()
 
@@ -59,10 +60,10 @@ func (useCase UseCase) GetOrCreateUser(c context.Context, userID string) (*User,
 	if err != nil {
 		return nil, err
 	}
-	return &User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
+	return &models.User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
 }
 
-func (useCase UseCase) SetPreferredSubstance(c context.Context, userId, newSubstance string) (*User, error) {
+func (useCase UseCase) SetPreferredSubstance(c context.Context, userId, newSubstance string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(c, useCase.contextTimeout)
 	defer cancel()
 
@@ -81,5 +82,5 @@ func (useCase UseCase) SetPreferredSubstance(c context.Context, userId, newSubst
 		return nil, nil
 	}
 
-	return &User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
+	return &models.User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
 }
