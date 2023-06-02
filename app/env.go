@@ -15,8 +15,7 @@ type Env struct {
 	DBPort          string `mapstructure:"DB_PORT"`
 	DBUser          string `mapstructure:"DB_USER"`
 	DBPass          string `mapstructure:"DB_PASS"`
-	GenericDBName   string `mapstructure:"GENERIC_DB_NAME"`
-	SubstanceDBName string `mapstructure:"SUBSTANCE_DB_NAME"`
+	DBName 			string `mapstructure:"DB_NAME"`
 	AppID           int    `mapstructure:"APP_ID"`
 }
 

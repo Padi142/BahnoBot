@@ -1,82 +1,44 @@
 package record
 
 import (
+	"bahno_bot/generic/models"
 	"context"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"sort"
+	"gorm.io/gorm"
 )
 
 type recordRepository struct {
-	database   mongo.Database
-	collection string
+	database  gorm.DB 
 }
 
-func NewRecordRepository(db mongo.Database, collection string) RecordRepository {
+func NewRecordRepository(db gorm.DB) RecordRepository {
 	return &recordRepository{
 		database:   db,
-		collection: collection,
 	}
 }
 
-func (ur *recordRepository) Create(c context.Context, userId string, record Record) error {
-	collection := ur.database.Collection(ur.collection)
+func (ur *recordRepository) Create(c context.Context, userId string, record models.Record) ( err error) {
+	result :=  ur.database.Create(&record);
+	err = result.Error
 
-	filter := bson.M{"user_id": userId}
-
-	update := bson.M{
-		"$push": bson.M{"records": record},
-	}
-
-	_, err := collection.UpdateOne(context.Background(), filter, update)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return err
+	return
 }
 
-func (ur *recordRepository) Fetch(c context.Context, userId string) ([]Record, error) {
-	collection := ur.database.Collection(ur.collection)
+func (ur *recordRepository) GetAll(c context.Context, userId string) (records []models.Record, err error) {
+	// if err := ur.database.Model(&models.User{}).
+	// Where("id = ?", userId).
+	// Joins("JOIN records ON records.user_id = users.id"). 
+	// Find(&records). 
+	// Error; err != nil {
+	// 	return nil, err
 
-	opts := options.Find().SetProjection(bson.D{{Key: "userId", Value: userId}})
-	cursor, err := collection.Find(c, bson.D{}, opts)
+	// }
 
-	if err != nil {
-		return nil, err
-	}
-
-	var records []Record
-
-	err = cursor.All(c, &records)
-	if records == nil {
-		return []Record{}, err
-	}
-
-	return records, err
+	// return records, err
+	return nil, nil
 }
 
-func (ur *recordRepository) GetLastRecord(c context.Context, userId string) (Record, error) {
-	collection := ur.database.Collection(ur.collection)
+func (ur *recordRepository) GetLast(c context.Context, userId string) (record models.Record, err error) {
+	ur.database.Last(&record);
 
-	type UserArray struct {
-		Records []*Record `bson:"records"`
-	}
-	var userArray UserArray
-	var record Record
-
-	err := collection.FindOne(c, bson.M{"user_id": userId}).Decode(&userArray)
-	if err != nil {
-		return Record{}, err
-	}
-
-	sort.Slice(userArray.Records, func(i, j int) bool {
-		return userArray.Records[i].Time.After(userArray.Records[j].Time)
-	})
-
-	record = *userArray.Records[0]
-
-	return record, err
+	return 
 }

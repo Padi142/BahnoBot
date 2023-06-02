@@ -2,72 +2,41 @@ package user
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"bahno_bot/generic/models"
+	"gorm.io/gorm"
 )
 
 type userRepository struct {
-	database   mongo.Database
-	collection string
+	database   gorm.DB
 }
 
-func NewUserRepository(db mongo.Database, collection string) UserRepository {
-	return &userRepository{
-		database:   db,
-		collection: collection,
+func NewUserRepository(db gorm.DB) UserRepository {
+	return &userRepository {
+		database: db,
 	}
 }
 
-func (ur *userRepository) Create(c context.Context, user *User) error {
-	collection := ur.database.Collection(ur.collection)
+func (ur *userRepository) Create(c context.Context, user *models.User) error {
+	result := ur.database.Create(user);
 
-	_, err := collection.InsertOne(c, user)
-
-	return err
+	return result.Error
 }
 
-func (ur *userRepository) Fetch(c context.Context) ([]User, error) {
-	collection := ur.database.Collection(ur.collection)
+func (ur *userRepository) GetAll(c context.Context) (users []models.User, err error) {
+	ur.database.Find(&users)
 
-	opts := options.Find().SetProjection(bson.D{{Key: "password", Value: 0}})
-	cursor, err := collection.Find(c, bson.D{}, opts)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var users []User
-
-	err = cursor.All(c, &users)
-	if users == nil {
-		return []User{}, err
-	}
-
-	return users, err
+	return
 }
 
-func (ur *userRepository) GetByUserID(c context.Context, id string) (*User, error) {
-	collection := ur.database.Collection(ur.collection)
+func (ur *userRepository) GetUser(c context.Context, id uint) (user *models.User, err error) {
+	ur.database.First(user, id)
 
-	var user User
-
-	err := collection.FindOne(c, bson.M{"user_id": id}).Decode(&user)
-	if err != nil {
-		return nil, err
-	}
-	return &user, err
+	return 
 }
 
-func (ur *userRepository) SetPreferredSubstance(c context.Context, userId, newSubstance string) error {
-	collection := ur.database.Collection(ur.collection)
+func (ur *userRepository) SetPreferredSubstance(c context.Context, userId, substanceId uint) error {
+	ur.database.Model(&models.User{}).Where("id = ?", userId).Update("preferred_substance_id", substanceId)
 
-	res, err := collection.UpdateOne(c, bson.M{"user_id": userId}, bson.M{"$set": bson.M{"preferred_substance": newSubstance}})
-	if err != nil {
-		return err
-	}
-	if res.ModifiedCount != 1 {
-		return err
-	}
-	return err
+	return nil
 }
