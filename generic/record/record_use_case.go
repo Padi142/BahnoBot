@@ -20,6 +20,7 @@ func NewRecordUseCase(recordRepository RecordRepository, timeout time.Duration) 
 
 func CreateRecordUseCase(recordRepository RecordRepository, record models.Record, userId string) error {
 	err := recordRepository.Create(context.Background(), userId, record)
+
 	if err != nil {
 		return err
 	}
@@ -27,7 +28,8 @@ func CreateRecordUseCase(recordRepository RecordRepository, record models.Record
 }
 func (useCase UseCase) GetLatestRecord(c context.Context, userId string) (*models.Record, error) {
 
-	record, err := useCase.recordRepository.GetLastRecord(c, userId)
+	record, err := useCase.recordRepository.GetLast(c, userId)
+
 	if err != nil {
 		return nil, err
 	}
@@ -36,13 +38,14 @@ func (useCase UseCase) GetLatestRecord(c context.Context, userId string) (*model
 }
 
 func (useCase UseCase) CreateNewRecord(c context.Context, userId string, record models.Record) (*models.Record, error) {
-
 	err := useCase.recordRepository.Create(c, userId, record)
+	
 	if err != nil {
 		return nil, err
 	}
 
-	newRecord, err := useCase.recordRepository.GetLastRecord(c, userId)
+	newRecord, err := useCase.recordRepository.GetLast(c, userId)
+
 	if err != nil {
 		return nil, err
 	}

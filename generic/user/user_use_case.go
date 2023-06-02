@@ -30,7 +30,7 @@ func (useCase UseCase) GetProfileByID(c context.Context, userID string) (*models
 	ctx, cancel := context.WithTimeout(c, useCase.contextTimeout)
 	defer cancel()
 
-	user, err := useCase.userRepository.GetByUserID(ctx, userID)
+	user, err := useCase.userRepository.GetUser(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -39,24 +39,24 @@ func (useCase UseCase) GetProfileByID(c context.Context, userID string) (*models
 		return nil, nil
 	}
 
-	return &User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
+	return &models.User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
 }
 
 func (useCase UseCase) GetOrCreateUser(c context.Context, userID string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(c, useCase.contextTimeout)
 	defer cancel()
 
-	user, err := useCase.userRepository.GetByUserID(ctx, userID)
+	user, err := useCase.userRepository.GetUser(ctx, userID)
 	if err == nil {
-		return &User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
+		return &models.User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
 	}
 
-	err = useCase.userRepository.Create(ctx, &User{UserId: userID})
+	err = useCase.userRepository.Create(ctx, &models.User{UserId: userID})
 	if err != nil {
 		return nil, err
 	}
 
-	user, err = useCase.userRepository.GetByUserID(ctx, userID)
+	user, err = useCase.userRepository.GetUser(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (useCase UseCase) SetPreferredSubstance(c context.Context, userId, newSubst
 		return nil, err
 	}
 
-	user, err := useCase.userRepository.GetByUserID(ctx, userId)
+	user, err := useCase.userRepository.GetUser(ctx, userId)
 	if err != nil {
 		return nil, err
 	}

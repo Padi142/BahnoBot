@@ -6,5 +6,5 @@ import (
 )
 
 type SubstanceRepository interface {
-	Fetch(c context.Context) ([]models.Substance, error)
+	GetAll(c context.Context) ([]models.Substance, error)
 }

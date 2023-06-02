@@ -18,10 +18,11 @@ func NewSubstanceUseCase(substanceRepository SubstanceRepository, timeout time.D
 	}
 }
 func (useCase UseCase) GetSubstances(c context.Context) ([]models.Substance, error) {
+	substances, err := useCase.substanceRepository.GetAll(c)
 
-	substances, err := useCase.substanceRepository.Fetch(c)
 	if err != nil {
 		return nil, err
 	}
+
 	return substances, nil
 }

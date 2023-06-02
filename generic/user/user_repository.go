@@ -23,20 +23,20 @@ func (ur *userRepository) Create(c context.Context, user *models.User) error {
 	return result.Error
 }
 
-func (ur *userRepository) Fetch(c context.Context) (users []models.User, err error) {
+func (ur *userRepository) GetAll(c context.Context) (users []models.User, err error) {
 	ur.database.Find(&users)
 
 	return
 }
 
-func (ur *userRepository) GetByUserID(c context.Context, id string) (user *models.User, err error) {
+func (ur *userRepository) GetUser(c context.Context, id string) (user *models.User, err error) {
 	ur.database.First(user, id)
 
 	return 
-
-	
 }
-func (ur *userRepository) SetPreferredSubstance(c context.Context, userId, newSubstance uint) error {
-	// ur.database.Model(&)
+
+func (ur *userRepository) SetPreferredSubstance(c context.Context, userId, substanceId uint) error {
+	ur.database.Model(&models.User{}).Where("id = ?", userId).Update("preferred_substance_id", substanceId)
+
 	return nil
 }
