@@ -29,7 +29,7 @@ func (ur *userRepository) GetAll(c context.Context) (users []models.User, err er
 	return
 }
 
-func (ur *userRepository) GetUser(c context.Context, id string) (user *models.User, err error) {
+func (ur *userRepository) GetUser(c context.Context, id uint) (user *models.User, err error) {
 	ur.database.First(user, id)
 
 	return 

@@ -9,6 +9,6 @@ import (
 type UserRepository interface {
 	Create(c context.Context, user *models.User) error
 	GetAll(c context.Context) ([]models.User, error)
-	GetUser(c context.Context, id string) (*models.User, error)
+	GetUser(c context.Context, id uint) (*models.User, error)
 	SetPreferredSubstance(c context.Context, userId, substanceId uint) error
 }

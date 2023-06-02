@@ -2,9 +2,11 @@ package discord
 
 import (
 	"bahno_bot/generic/models"
+	"log"
+
 	"github.com/bwmarrin/discordgo"
 	"go.mongodb.org/mongo-driver/mongo"
-	"log"
+	"gorm.io/gorm"
 )
 
 type Service struct {
@@ -27,7 +29,7 @@ func CreateDiscord(token string) *Service {
 
 }
 
-func (d *Service) InitCommands(db *mongo.Database, appId int) {
+func (d *Service) InitCommands(db gorm.DB, appId int) {
 
 	//Clears old commands
 	//d.ClearCommands()

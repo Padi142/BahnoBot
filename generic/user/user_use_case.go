@@ -26,7 +26,7 @@ func (useCase UseCase) CreateUser(c context.Context, user models.User) error {
 	return nil
 }
 
-func (useCase UseCase) GetProfileByID(c context.Context, userID string) (*models.User, error) {
+func (useCase UseCase) GetProfileByID(c context.Context, userID uint) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(c, useCase.contextTimeout)
 	defer cancel()
 
@@ -39,19 +39,19 @@ func (useCase UseCase) GetProfileByID(c context.Context, userID string) (*models
 		return nil, nil
 	}
 
-	return &models.User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
+	return user, nil
 }
 
-func (useCase UseCase) GetOrCreateUser(c context.Context, userID string) (*models.User, error) {
+func (useCase UseCase) GetOrCreateUser(c context.Context, userID uint) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(c, useCase.contextTimeout)
 	defer cancel()
 
 	user, err := useCase.userRepository.GetUser(ctx, userID)
 	if err == nil {
-		return &models.User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
+		return user, nil
 	}
 
-	err = useCase.userRepository.Create(ctx, &models.User{UserId: userID})
+	err = useCase.userRepository.Create(ctx, &models.User{ID: userID})
 	if err != nil {
 		return nil, err
 	}
@@ -60,14 +60,15 @@ func (useCase UseCase) GetOrCreateUser(c context.Context, userID string) (*model
 	if err != nil {
 		return nil, err
 	}
-	return &models.User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
+
+	return user, nil
 }
 
-func (useCase UseCase) SetPreferredSubstance(c context.Context, userId, newSubstance string) (*models.User, error) {
+func (useCase UseCase) SetPreferredSubstance(c context.Context, userId, substanceId uint) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(c, useCase.contextTimeout)
 	defer cancel()
 
-	err := useCase.userRepository.SetPreferredSubstance(context.Background(), userId, newSubstance)
+	err := useCase.userRepository.SetPreferredSubstance(context.Background(), userId, substanceId)
 
 	if err != nil {
 		return nil, err
@@ -82,5 +83,5 @@ func (useCase UseCase) SetPreferredSubstance(c context.Context, userId, newSubst
 		return nil, nil
 	}
 
-	return &models.User{Name: user.Name, ID: user.ID, UserId: user.UserId, PreferredSubstance: user.PreferredSubstance}, nil
+	return user, nil
 }

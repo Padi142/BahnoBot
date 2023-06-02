@@ -7,7 +7,3 @@ type Substance struct {
 	RecommendedDosage string
 	RecommendedPause  string
 }
-
-func GetSubstances() []*Substance {
-	return nil
-}
