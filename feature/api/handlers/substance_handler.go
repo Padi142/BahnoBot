@@ -11,7 +11,7 @@ import (
 // GetAllSubstances godoc
 // @Summary gets all substances from db
 // @Description Gets al substances that are by default accessible to user
-// @Tags root
+// @Tags substance
 // @Produce json
 // @Produce json
 // @Success 200 {object} map[string]interface{}

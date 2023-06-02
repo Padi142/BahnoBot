@@ -21,7 +21,7 @@ paths:
             type: object
       summary: gets user by id
       tags:
-      - root
+      - user
     put:
       description: Send new user struct to update user in db
       produces:
@@ -35,7 +35,7 @@ paths:
             type: object
       summary: updates user with incoming json struct
       tags:
-      - root
+      - user
   /record/last:
     get:
       description: Gets the last record from records for given user id and substance
@@ -61,7 +61,7 @@ paths:
             type: object
       summary: gets last record for given user
       tags:
-      - root
+      - record
   /substances/all:
     get:
       description: Gets al substances that are by default accessible to user
@@ -76,5 +76,5 @@ paths:
             type: object
       summary: gets all substances from db
       tags:
-      - root
+      - substance
 swagger: "2.0"

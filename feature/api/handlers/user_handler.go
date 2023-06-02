@@ -12,7 +12,7 @@ import (
 // GetUser godoc
 // @Summary gets user by id
 // @Description Gets the basic user info by their id
-// @Tags root
+// @Tags user
 // @Produce json
 // @Param userId query string true "ID of the user to retrieve"
 // @Produce json
@@ -47,7 +47,7 @@ func GetUser(useCase user.UseCase) fiber.Handler {
 // UpdateUser godoc
 // @Summary updates user with incoming json struct
 // @Description Send new user struct to update user in db
-// @Tags root
+// @Tags user
 // @Produce json
 // @Body user query models.User{} true "new user body"
 // @Produce json

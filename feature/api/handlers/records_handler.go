@@ -11,7 +11,7 @@ import (
 // GetLastRecord godoc
 // @Summary gets last record for given user
 // @Description Gets the last record from records for given user id and substance id, if no substance id provided, gets last record for all substances
-// @Tags root
+// @Tags record
 // @Produce json
 // @Param userId query string true "ID of the user to retrieve last record"
 // @Param substance query string false "value of the substance"

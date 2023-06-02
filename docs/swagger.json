@@ -12,7 +12,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "root"
+                    "user"
                 ],
                 "summary": "gets user by id",
                 "parameters": [
@@ -41,7 +41,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "root"
+                    "user"
                 ],
                 "summary": "updates user with incoming json struct",
                 "responses": {
@@ -63,7 +63,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "root"
+                    "record"
                 ],
                 "summary": "gets last record for given user",
                 "parameters": [
@@ -100,7 +100,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "root"
+                    "substance"
                 ],
                 "summary": "gets all substances from db",
                 "responses": {
