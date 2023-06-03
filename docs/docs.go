@@ -134,7 +134,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/substances/all": {
+        "/substance/all": {
             "get": {
                 "description": "Gets al substances that are by default accessible to user",
                 "produces": [
