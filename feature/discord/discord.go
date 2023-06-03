@@ -28,7 +28,7 @@ func CreateDiscord(token string) *Service {
 
 }
 
-func (d *Service) InitCommands(db gorm.DB, appId int) {
+func (d *Service) InitCommands(db *gorm.DB, appId int) {
 
 	//Clears old commands
 	//d.ClearCommands()

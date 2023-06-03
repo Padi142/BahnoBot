@@ -18,7 +18,12 @@ func NewDatabase(host, user, password, dbname string, port uint) (db *gorm.DB) {
 		return
 	}
 
-	db.AutoMigrate(&models.Substance{}, &models.User{}, &models.Record{})
+	err = db.AutoMigrate(&models.Substance{}, &models.User{}, &models.Record{})
+
+	if err != nil {
+		log.Printf(err.Error())
+		return
+	}
 	// db.AutoMigrate(&models.User{})
 	// db.AutoMigrate(&models.Record{})
 
