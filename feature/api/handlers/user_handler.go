@@ -3,24 +3,23 @@ package handlers
 import (
 	"bahno_bot/generic/models"
 	"bahno_bot/generic/user"
-	"context"
 	"github.com/gofiber/fiber/v2"
 	"log"
 	"net/http"
 )
 
-// GetUser godoc
-// @Summary gets user by id
-// @Description Gets the basic user info by their id
+// GetUserByDiscordId godoc
+// @Summary gets user by  discord id
+// @Description Gets the basic user info by their discord id
 // @Tags user
 // @Produce json
-// @Param userId query string true "ID of the user to retrieve"
+// @Param discordId query string true "ID of the user to retrieve"
 // @Produce json
 // @Success 200 {object} map[string]interface{}
 // @Router /api/user [get]
-func GetUser(useCase user.UseCase) fiber.Handler {
+func GetUserByDiscordId(useCase user.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		userId := c.Query("userId")
+		userId := c.Query("discordId")
 
 		log.Println("API CALL: GetUser id: " + userId)
 
@@ -30,7 +29,7 @@ func GetUser(useCase user.UseCase) fiber.Handler {
 			})
 		}
 
-		userResult, err := useCase.GetProfileByID(context.Background(), userId)
+		userResult, err := useCase.GetUserByDiscordId(userId)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(fiber.Map{
@@ -67,7 +66,7 @@ func UpdateUser(useCase user.UseCase) fiber.Handler {
 			})
 		}
 
-		userResult, err := useCase.SetPreferredSubstance(context.Background(), usr.UserId, usr.PreferredSubstance)
+		userResult, err := useCase.SetPreferredSubstance(usr.ID, usr.PreferredSubstanceID)
 		if err != nil {
 			return c.JSON(fiber.Map{
 				"error": err.Error(),

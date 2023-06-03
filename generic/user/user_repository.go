@@ -4,8 +4,6 @@ import (
 	"bahno_bot/generic/models"
 	"context"
 
-	"bahno_bot/generic/models"
-
 	"gorm.io/gorm"
 )
 
@@ -19,20 +17,26 @@ func NewUserRepository(db gorm.DB) UserRepository {
 	}
 }
 
-func (ur *userRepository) Create(c context.Context, user *models.User) error {
+func (ur *userRepository) Create(user *models.User) error {
 	result := ur.database.Create(user)
 
 	return result.Error
 }
 
-func (ur *userRepository) GetAll(c context.Context) (users []models.User, err error) {
+func (ur *userRepository) GetAll() (users []models.User, err error) {
 	ur.database.Find(&users)
 
 	return
 }
 
-func (ur *userRepository) GetUser(c context.Context, id uint) (user *models.User, err error) {
+func (ur *userRepository) GetUser(id uint) (user *models.User, err error) {
 	ur.database.First(user, id)
+
+	return
+}
+
+func (ur *userRepository) GetUserByDiscordId(id string) (user *models.User, err error) {
+	ur.database.First(user, "discord_id = ?", id)
 
 	return
 }

@@ -8,7 +8,7 @@ import (
 	"bahno_bot/generic/user"
 	"github.com/gofiber/fiber/v2"
 	fiberSwagger "github.com/swaggo/fiber-swagger"
-	"go.mongodb.org/mongo-driver/mongo"
+	"gorm.io/gorm"
 	"log"
 	"time"
 )
@@ -25,17 +25,17 @@ import (
 // @host localhost:8081
 // @BasePath /
 // @schemes http
-func NewApiService(db *mongo.Database) {
+func NewApiService(db gorm.DB) {
 	log.Println("Creating fiber api service")
 	app := fiber.New()
 
-	userRepo := user.NewUserRepository(*db, "users")
+	userRepo := user.NewUserRepository(db)
 	userUseCase := user.NewUserUseCase(userRepo, time.Duration(time.Second*10))
 
-	recordRepo := record.NewRecordRepository(*db, "users")
+	recordRepo := record.NewRecordRepository(db)
 	recordUseCase := record.NewRecordUseCase(recordRepo, time.Duration(time.Second*10))
 
-	substancesRepo := substance.NewSubstanceRepository(*db, "substances")
+	substancesRepo := substance.NewSubstanceRepository(db)
 	substanceUseCase := substance.NewSubstanceUseCase(substancesRepo, time.Duration(time.Second*10))
 
 	api := app.Group("/api")

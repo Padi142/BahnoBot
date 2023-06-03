@@ -7,7 +7,7 @@ import (
 )
 
 func UserRouter(app fiber.Router, useCase user.UseCase) {
-	app.Get("/user", handlers.GetUser(useCase))
+	app.Get("/user", handlers.GetUserByDiscordId(useCase))
 	app.Put("/user", handlers.UpdateUser(useCase))
 	//app.Post("/user", handlers.CreateUSer(service))
 }
