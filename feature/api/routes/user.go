@@ -9,10 +9,9 @@ import (
 
 func UserRouter(app fiber.Router, useCase user.UseCase) {
 	app.Get("/users", handlers.GetUsers(useCase))
-	app.Get("/users/:id", handlers.GetUser(useCase))
+	app.Get("/users/:id<int>", handlers.GetUser(useCase))
 	app.Put("/users", handlers.UpdateUser(useCase))
-	app.Get("/users/:id/records", handlers.GetUserRecords(useCase))
-	app.Get("/users/:id/records/last", handlers.GetLastUserRecord(useCase))
-	app.Get("/user_discord", handlers.GetUserDiscord(useCase))
-	//app.Post("/user", handlers.CreateUSer(service))
+	app.Get("/users/:id<int>/records", handlers.GetUserRecords(useCase))
+	app.Get("/users/:id<int>/records/last", handlers.GetLastUserRecord(useCase))
+	app.Get("/users/discord_id/:discord_id", handlers.GetUserDiscord(useCase))
 }

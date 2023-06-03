@@ -14,13 +14,7 @@ func NewSubstanceUseCase(substanceRepository SubstanceRepository) UseCase {
 	}
 }
 func (useCase UseCase) GetSubstances() ([]models.Substance, error) {
-	substances, err := useCase.substanceRepository.GetAll()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return substances, nil
+	return useCase.substanceRepository.GetAll()
 }
 
 func (useCase UseCase) GetSubstance(id uint) (models.Substance, error) {

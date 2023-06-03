@@ -15,7 +15,6 @@ import (
 // @Description Gets the basic info about every user
 // @Tags user
 // @Produce json
-// @Param
 // @Produce json
 // @Success 200 {object} map[string]interface{}
 // @Router /api/user [get]
@@ -43,10 +42,10 @@ func GetUsers(useCase user.UseCase) fiber.Handler {
 // @Description Gets the basic user info by their id
 // @Tags user
 // @Produce json
-// @Param userId query string true "ID of the user to retrieve"
+// @Param id path int true "Account ID"
 // @Produce json
 // @Success 200 {object} map[string]interface{}
-// @Router /api/user/:id [get]
+// @Router /api/user/{id} [get]
 func GetUser(useCase user.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// if userIdString == "" {
@@ -90,17 +89,17 @@ func GetUser(useCase user.UseCase) fiber.Handler {
 // @Router /api/user_discord [get]
 func GetUserDiscord(useCase user.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		userIdString := c.Query("discordId")
+		discord_id := c.Params("discord_id")
 
-		log.Println("API CALL: GetUserDiscord id: " + userIdString)
+		log.Println("API CALL: GetUserDiscord id: " + discord_id)
 
-		if userIdString == "" {
+		if discord_id == "" {
 			return c.JSON(fiber.Map{
 				"error": "No discord id provided",
 			})
 		}
 
-		userResult, err := useCase.GetProfileByDiscordID(userIdString)
+		userResult, err := useCase.GetProfileByDiscordID(discord_id)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(fiber.Map{
@@ -152,13 +151,14 @@ func UpdateUser(useCase user.UseCase) fiber.Handler {
 
 // GetUserRecords godoc
 // @Summary get all records of user
-// @Description 
+// @Description
 // @Tags user
 // @Produce json
+// @Param id path int true "Account ID"
 // @Body user query models.User{} true "new user body"
 // @Produce json
 // @Success 200 {object} map[string]interface{}
-// @Router /api/user/:id/records [get]
+// @Router /api/user/{id}/records [get]
 func GetUserRecords(useCase user.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
@@ -179,13 +179,14 @@ func GetUserRecords(useCase user.UseCase) fiber.Handler {
 
 // GetLastUserRecord godoc
 // @Summary get last record of given user
-// @Description 
+// @Description
 // @Tags user
+// @Param id path int true "Account ID"
 // @Produce json
 // @Body user query models.User{} true "new user body"
 // @Produce json
 // @Success 200 {object} map[string]interface{}
-// @Router /api/user/:id/records/last [get]
+// @Router /api/user/{id}/records/last [get]
 func GetLastUserRecord(useCase user.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 

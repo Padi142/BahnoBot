@@ -23,9 +23,9 @@ func CreateRecordUseCase(recordRepository RecordRepository, record models.Record
 
 	return nil
 }
-func (useCase UseCase) GetLatestRecord(userId uint) (*models.Record, error) {
 
-	record, err := useCase.recordRepository.GetLast(userId)
+func (useCase UseCase) CreateNewRecord(userId uint, record models.Record) (*models.Record, error) {
+	err := useCase.recordRepository.Create(record)
 
 	if err != nil {
 		return nil, err
@@ -34,18 +34,6 @@ func (useCase UseCase) GetLatestRecord(userId uint) (*models.Record, error) {
 	return &record, nil
 }
 
-func (useCase UseCase) CreateNewRecord(userId uint, record models.Record) (*models.Record, error) {
-	err := useCase.recordRepository.Create(record)
-	
-	if err != nil {
-		return nil, err
-	}
-
-	newRecord, err := useCase.recordRepository.GetLast(userId)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &newRecord, nil
+func (useCase UseCase) GetAllRecords() ([]models.Record, error) {
+	return useCase.GetAllRecords()
 }

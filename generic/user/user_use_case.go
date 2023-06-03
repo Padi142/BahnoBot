@@ -2,18 +2,15 @@ package user
 
 import (
 	"bahno_bot/generic/models"
-	"bahno_bot/generic/record"
 )
 
 type UseCase struct {
-	userRepository UserRepository;
-	recordRepostiroy record.RecordRepository;
+	userRepository UserRepository
 }
 
-func NewUserUseCase(userRepository UserRepository, recordRepository record.RecordRepository) UseCase {
+func NewUserUseCase(userRepository UserRepository) UseCase {
 	return UseCase{
 		userRepository: userRepository,
-		recordRepostiroy: recordRepository,
 	}
 }
 
@@ -22,38 +19,15 @@ func (useCase UseCase) GetUsers() ([]models.User, error) {
 }
 
 func (useCase UseCase) CreateUser(user models.User) error {
-
-	err := useCase.userRepository.Create(&user)
-	if err != nil {
-		return err
-	}
-	return nil
+	return useCase.userRepository.Create(&user)
 }
 
 func (useCase UseCase) GetProfileByID(userID uint) (*models.User, error) {
-	user, err := useCase.userRepository.GetUser(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	if user == nil {
-		return nil, nil
-	}
-
-	return user, nil
+	return useCase.userRepository.GetUser(userID)
 }
 
-func (useCase UseCase) GetProfileByDiscordID(userID string) (*models.User, error) {
-	user, err := useCase.userRepository.GetUserByDiscordId(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	if user == nil {
-		return nil, nil
-	}
-
-	return user, nil
+func (useCase UseCase) GetProfileByDiscordID(discordId string) (*models.User, error) {
+	return useCase.userRepository.GetUserByDiscordId(discordId)
 }
 
 func (useCase UseCase) GetOrCreateUser(userID uint) (*models.User, error) {
@@ -114,9 +88,13 @@ func (useCase UseCase) SetPreferredSubstance(userId, substanceId uint) (*models.
 }
 
 func (useCase UseCase) GetUserRecords(userId uint) ([]models.Record, error) {
-	return useCase.recordRepostiroy.GetAll(userId)
+	return useCase.userRepository.GetUserRecords(userId)
+	// user, _ := useCase.userRepository.GetUser(userId)
+
+	// return user.Records, nil
 }
 
-func (useCase UseCase) GetLastUserRecord(userId uint) (models.Record, error) {
-	return useCase.recordRepostiroy.GetLast(userId)
+func (useCase UseCase) GetLastUserRecord(userId uint) (*models.Record, error) {
+	return useCase.userRepository.GetUserLastRecord(userId)
+
 }
