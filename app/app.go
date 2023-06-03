@@ -1,25 +1,36 @@
 package app
 
 import (
-	"bahno_bot/feature/discord"
+	// "bahno_bot/feature/discord"
 	"bahno_bot/generic/database"
-	"go.mongodb.org/mongo-driver/mongo"
+	"strconv"
+
+	"gorm.io/gorm"
 )
 
 type Application struct {
 	Env     *Env
-	Mongo   *mongo.Client
-	Discord *discord.Service
+	Db 		*gorm.DB
+	// Discord *discord.Service
 }
 
 func App() Application {
 	app := Application{}
 	app.Env = NewEnv()
-	app.Mongo = database.NewMongoDatabase(app.Env.DBUser, app.Env.DBPass, app.Env.GenericDBName)
-	app.Discord = discord.CreateDiscord(app.Env.DiscordToken)
-	return app
-}
+	port, _ := strconv.Atoi(app.Env.DBPort)
+	app.Db = database.NewDatabase(app.Env.DBHost, app.Env.DBUser, app.Env.DBPass, app.Env.DBName, uint(port))
 
-func (app *Application) CloseDBConnection() {
-	database.CloseMongoDBConnection(app.Mongo)
+	// app.Discord = discord.CreateDiscord(app.Env.DiscordToken)
+
+
+	// recordRepo := record.NewRecordRepository(app.Db)
+	// record := models.Record{Amount: 69, SubstanceID: 2, UserID: 1, Time: time.Now()}
+	// r, _ := recordRepo.GetLast(1)
+
+	// fmt.Printf("%v", r)
+
+	// userUseCase := user.NewUserUseCase(userRepo, time.Duration(time.Second*10))
+	// userUseCase.GetProfileByID()
+
+	return app
 }

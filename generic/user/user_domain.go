@@ -1,14 +1,13 @@
 package user
 
 import (
-	"context"
 	"bahno_bot/generic/models"
 )
 
 
 type UserRepository interface {
-	Create(c context.Context, user *models.User) error
-	GetAll(c context.Context) ([]models.User, error)
-	GetUser(c context.Context, id uint) (*models.User, error)
-	SetPreferredSubstance(c context.Context, userId, substanceId uint) error
+	Create(user *models.User) error
+	GetAll() ([]models.User, error)
+	GetUser(id uint) (*models.User, error)
+	SetPreferredSubstance(userId, substanceId uint) error
 }

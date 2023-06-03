@@ -1,34 +1,31 @@
 package record
 
 import (
-	"context"
-	"time"
 	"bahno_bot/generic/models"
 )
 
 type UseCase struct {
 	recordRepository RecordRepository
-	contextTimeout   time.Duration
 }
 
-func NewRecordUseCase(recordRepository RecordRepository, timeout time.Duration) UseCase {
+func NewRecordUseCase(recordRepository RecordRepository) UseCase {
 	return UseCase{
 		recordRepository: recordRepository,
-		contextTimeout:   timeout,
 	}
 }
 
-func CreateRecordUseCase(recordRepository RecordRepository, record models.Record, userId string) error {
-	err := recordRepository.Create(context.Background(), userId, record)
+func CreateRecordUseCase(recordRepository RecordRepository, record models.Record) error {
+	err := recordRepository.Create(record)
 
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
-func (useCase UseCase) GetLatestRecord(c context.Context, userId string) (*models.Record, error) {
+func (useCase UseCase) GetLatestRecord(userId uint) (*models.Record, error) {
 
-	record, err := useCase.recordRepository.GetLast(c, userId)
+	record, err := useCase.recordRepository.GetLast(userId)
 
 	if err != nil {
 		return nil, err
@@ -37,14 +34,14 @@ func (useCase UseCase) GetLatestRecord(c context.Context, userId string) (*model
 	return &record, nil
 }
 
-func (useCase UseCase) CreateNewRecord(c context.Context, userId string, record models.Record) (*models.Record, error) {
-	err := useCase.recordRepository.Create(c, userId, record)
+func (useCase UseCase) CreateNewRecord(userId uint, record models.Record) (*models.Record, error) {
+	err := useCase.recordRepository.Create(record)
 	
 	if err != nil {
 		return nil, err
 	}
 
-	newRecord, err := useCase.recordRepository.GetLast(c, userId)
+	newRecord, err := useCase.recordRepository.GetLast(userId)
 
 	if err != nil {
 		return nil, err

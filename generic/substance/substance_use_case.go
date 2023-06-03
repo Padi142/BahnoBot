@@ -2,23 +2,19 @@ package substance
 
 import (
 	"bahno_bot/generic/models"
-	"context"
-	"time"
 )
 
 type UseCase struct {
 	substanceRepository SubstanceRepository
-	contextTimeout      time.Duration
 }
 
-func NewSubstanceUseCase(substanceRepository SubstanceRepository, timeout time.Duration) UseCase {
+func NewSubstanceUseCase(substanceRepository SubstanceRepository) UseCase {
 	return UseCase{
 		substanceRepository: substanceRepository,
-		contextTimeout:      timeout,
 	}
 }
-func (useCase UseCase) GetSubstances(c context.Context) ([]models.Substance, error) {
-	substances, err := useCase.substanceRepository.GetAll(c)
+func (useCase UseCase) GetSubstances() ([]models.Substance, error) {
+	substances, err := useCase.substanceRepository.GetAll()
 
 	if err != nil {
 		return nil, err
