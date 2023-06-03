@@ -37,6 +37,10 @@ func NewApiService(db *gorm.DB) {
 	substancesRepo := substance.NewSubstanceRepository(db)
 	substanceUseCase := substance.NewSubstanceUseCase(substancesRepo)
 
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hello bahno world!")
+	})
+
 	api := app.Group("/api")
 	routes.UserRouter(api, userUseCase)
 	routes.RecordsRoute(api, recordUseCase)
