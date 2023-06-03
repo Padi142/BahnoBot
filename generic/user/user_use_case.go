@@ -13,6 +13,11 @@ func NewUserUseCase(userRepository UserRepository) UseCase {
 		userRepository: userRepository,
 	}
 }
+
+func (useCase UseCase) GetUsers() ([]models.User, error) {
+	return useCase.userRepository.GetAll()
+}
+
 func (useCase UseCase) CreateUser(user models.User) error {
 
 	err := useCase.userRepository.Create(&user)

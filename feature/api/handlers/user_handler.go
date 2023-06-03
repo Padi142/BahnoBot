@@ -3,11 +3,40 @@ package handlers
 import (
 	"bahno_bot/generic/models"
 	"bahno_bot/generic/user"
-	"github.com/gofiber/fiber/v2"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/gofiber/fiber/v2"
 )
+
+// GetUsers godoc
+// @Summary Get all users
+// @Description Gets the basic info about every user
+// @Tags user
+// @Produce json
+// @Param
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /api/user [get]
+func GetUsers(useCase user.UseCase) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		log.Println("API CALL: GetUsers")
+
+		userResult, err := useCase.GetUsers()
+
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(fiber.Map{
+				"error": err.Error(),
+			})
+
+		}
+		return c.JSON(fiber.Map{
+			"data": userResult,
+		})
+	}
+}
 
 // GetUser godoc
 // @Summary gets user by id
@@ -17,26 +46,24 @@ import (
 // @Param userId query string true "ID of the user to retrieve"
 // @Produce json
 // @Success 200 {object} map[string]interface{}
-// @Router /api/user [get]
+// @Router /api/user/:id [get]
 func GetUser(useCase user.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		userIdString := c.Query("userId")
+		// if userIdString == "" {
+		// 	return c.JSON(fiber.Map{
+		// 		"error": "No user id provided",
+		// 	})
+		// }
 
-		log.Println("API CALL: GetUser id: " + userIdString)
+		userId, err := strconv.ParseUint(c.Params("id"), 10, 64)
 
-		if userIdString == "" {
-			return c.JSON(fiber.Map{
-				"error": "No user id provided",
-			})
-		}
+		log.Printf("API CALL: GetUser id: %d\n", userId)
 
-		userId, err := strconv.ParseUint(userIdString, 10, 32)
-
-		if userIdString == "" {
-			return c.JSON(fiber.Map{
-				"error": "Wrong userId format",
-			})
-		}
+		// if userIdString == "" {
+		// 	return c.JSON(fiber.Map{
+		// 		"error": "Wrong userId format",
+		// 	})
+		// }
 
 		userResult, err := useCase.GetProfileByID(uint(userId))
 		if err != nil {
@@ -97,6 +124,61 @@ func GetUserDiscord(useCase user.UseCase) fiber.Handler {
 // @Success 200 {object} map[string]interface{}
 // @Router /api/user [put]
 func UpdateUser(useCase user.UseCase) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		log.Println("API CALL: UpdateUser ")
+
+		usr := models.User{}
+
+		err := c.BodyParser(&usr)
+
+		if err != nil {
+			return c.JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+		userResult, err := useCase.SetPreferredSubstance(usr.ID, usr.PreferredSubstanceID)
+		if err != nil {
+			return c.JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"user": userResult,
+		})
+	}
+}
+
+func GetUserRecords(useCase user.UseCase) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+
+		useCase.
+
+		usr := models.User{}
+
+		err := c.BodyParser(&usr)
+
+		if err != nil {
+			return c.JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+		userResult, err := useCase.SetPreferredSubstance(usr.ID, usr.PreferredSubstanceID)
+		if err != nil {
+			return c.JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"user": userResult,
+		})
+	}
+}
+
+func GetLastUserRecords(useCase user.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		log.Println("API CALL: UpdateUser ")
 

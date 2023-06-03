@@ -22,3 +22,7 @@ func (useCase UseCase) GetSubstances() ([]models.Substance, error) {
 
 	return substances, nil
 }
+
+func (useCase UseCase) GetSubstance(id uint) (models.Substance, error) {
+	return useCase.substanceRepository.Get(id)
+}
