@@ -1,9 +1,11 @@
 package models
 
 type Substance struct {
-	ID                uint 
-	Name              string
-	Value             string
-	RecommendedDosage string
-	RecommendedPause  string
+	ID                       uint 
+	Label				     string
+	Value                    string
+	RecommendedDosageMin     uint 
+	RecommendedDosageMax     uint 
+	RecommendedPauseMin 	 uint 
+	RecommendedPauseMax      uint 
 }

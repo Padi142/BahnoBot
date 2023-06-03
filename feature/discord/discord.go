@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/bwmarrin/discordgo"
-	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/gorm"
 )
 
