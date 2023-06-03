@@ -55,6 +55,37 @@
                 }
             }
         },
+        "/api/user_discord": {
+            "get": {
+                "description": "Gets the basic user info by their discord id",
+                "produces": [
+                    "application/json",
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "gets user by their discord id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of the user to retrieve",
+                        "name": "discordId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/record/last": {
             "get": {
                 "description": "Gets the last record from records for given user id and substance id, if no substance id provided, gets last record for all substances",

@@ -36,6 +36,27 @@ paths:
       summary: updates user with incoming json struct
       tags:
       - user
+  /api/user_discord:
+    get:
+      description: Gets the basic user info by their discord id
+      parameters:
+      - description: ID of the user to retrieve
+        in: query
+        name: discordId
+        required: true
+        type: string
+      produces:
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: gets user by their discord id
+      tags:
+      - user
   /record/last:
     get:
       description: Gets the last record from records for given user id and substance
