@@ -22,6 +22,8 @@ WORKDIR /bahno_bot
 
 COPY --from=builder /build/bahno_bot /bahno_bot
 
+RUN touch ./.env
+
 COPY ./.env /bahno_bot
 
 COPY ./docs/ /bahno_bot/docs
