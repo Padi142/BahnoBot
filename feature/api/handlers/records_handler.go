@@ -17,7 +17,7 @@ import (
 // @Param substance query string false "value of the substance"
 // @Produce json
 // @Success 200 {object} map[string]interface{}
-// @Router /record/last [get]
+// @Router /api/record/last [get]
 func GetLastRecord(useCase record.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		userIdString := c.Query("userId")

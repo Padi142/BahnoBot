@@ -14,7 +14,7 @@ import (
 // @Produce json
 // @Produce json
 // @Success 200 {object} map[string]interface{}
-// @Router /substance/all [get]
+// @Router /api/substance/all [get]
 func GetAllSubstances(useCase substance.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
