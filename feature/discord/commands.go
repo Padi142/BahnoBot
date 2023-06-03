@@ -94,7 +94,8 @@ func (d *Service) BahnakCommand(db *gorm.DB, appId int) error {
 		LogCommandUse(i.Member.User.Username, command.Name)
 
 		userRepo := user.NewUserRepository(db)
-		userUseCase := user.NewUserUseCase(userRepo)
+		recordRepo := record.NewRecordRepository(db)
+		userUseCase := user.NewUserUseCase(userRepo, recordRepo)
 
 		userId := i.Member.User.ID
 
@@ -127,8 +128,8 @@ func (d *Service) BahnakCommand(db *gorm.DB, appId int) error {
 
 func (d *Service) SubstanceCommand(db *gorm.DB, appId int) error {
 	userRepo := user.NewUserRepository(db)
-
-	userUseCase := user.NewUserUseCase(userRepo)
+	recordRepo := record.NewRecordRepository(db)
+	userUseCase := user.NewUserUseCase(userRepo, recordRepo)
 
 	substanceRepo := substance.NewSubstanceRepository(db)
 
@@ -287,8 +288,8 @@ func (d *Service) BahnimCommand(db *gorm.DB, appId int) error {
 		LogCommandUse(i.Member.User.Username, command.Name)
 
 		userRepo := user.NewUserRepository(db)
-
-		userUseCase := user.NewUserUseCase(userRepo)
+		recordRepo := record.NewRecordRepository(db)
+		userUseCase := user.NewUserUseCase(userRepo, recordRepo)
 
 		usr, err := userUseCase.GetProfileByDiscordID(i.Member.User.ID)
 
@@ -371,7 +372,7 @@ func (d *Service) LastBahneni(db *gorm.DB, appId int) error {
 
 	userRepo := user.NewUserRepository(db)
 
-	userUseCase := user.NewUserUseCase(userRepo)
+	userUseCase := user.NewUserUseCase(userRepo, recordRepo)
 
 	command := &discordgo.ApplicationCommand{
 		Name:        "last_bahneni",

@@ -29,9 +29,10 @@ func NewApiService(db *gorm.DB) {
 	app := fiber.New()
 
 	userRepo := user.NewUserRepository(db)
-	userUseCase := user.NewUserUseCase(userRepo)
-
 	recordRepo := record.NewRecordRepository(db)
+
+	userUseCase := user.NewUserUseCase(userRepo, recordRepo)
+
 	recordUseCase := record.NewRecordUseCase(recordRepo)
 
 	substancesRepo := substance.NewSubstanceRepository(db)

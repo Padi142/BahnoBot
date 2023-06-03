@@ -2,15 +2,18 @@ package user
 
 import (
 	"bahno_bot/generic/models"
+	"bahno_bot/generic/record"
 )
 
 type UseCase struct {
-	userRepository UserRepository
+	userRepository UserRepository;
+	recordRepostiroy record.RecordRepository;
 }
 
-func NewUserUseCase(userRepository UserRepository) UseCase {
+func NewUserUseCase(userRepository UserRepository, recordRepository record.RecordRepository) UseCase {
 	return UseCase{
 		userRepository: userRepository,
+		recordRepostiroy: recordRepository,
 	}
 }
 
@@ -108,4 +111,12 @@ func (useCase UseCase) SetPreferredSubstance(userId, substanceId uint) (*models.
 	}
 
 	return user, nil
+}
+
+func (useCase UseCase) GetUserRecords(userId uint) ([]models.Record, error) {
+	return useCase.recordRepostiroy.GetAll(userId)
+}
+
+func (useCase UseCase) GetLastUserRecord(userId uint) (models.Record, error) {
+	return useCase.recordRepostiroy.GetLast(userId)
 }

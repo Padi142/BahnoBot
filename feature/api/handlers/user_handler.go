@@ -150,22 +150,21 @@ func UpdateUser(useCase user.UseCase) fiber.Handler {
 	}
 }
 
+// GetUserRecords godoc
+// @Summary get all records of user
+// @Description 
+// @Tags user
+// @Produce json
+// @Body user query models.User{} true "new user body"
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /api/user/:id/records [get]
 func GetUserRecords(useCase user.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
-		useCase.
+		userId, _ := strconv.ParseUint(c.Params("id"), 10, 64)
+		records, err := useCase.GetUserRecords(uint(userId))
 
-		usr := models.User{}
-
-		err := c.BodyParser(&usr)
-
-		if err != nil {
-			return c.JSON(fiber.Map{
-				"error": err.Error(),
-			})
-		}
-
-		userResult, err := useCase.SetPreferredSubstance(usr.ID, usr.PreferredSubstanceID)
 		if err != nil {
 			return c.JSON(fiber.Map{
 				"error": err.Error(),
@@ -173,26 +172,26 @@ func GetUserRecords(useCase user.UseCase) fiber.Handler {
 		}
 
 		return c.JSON(fiber.Map{
-			"user": userResult,
+			"data": records,
 		})
 	}
 }
 
-func GetLastUserRecords(useCase user.UseCase) fiber.Handler {
+// GetLastUserRecord godoc
+// @Summary get last record of given user
+// @Description 
+// @Tags user
+// @Produce json
+// @Body user query models.User{} true "new user body"
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /api/user/:id/records/last [get]
+func GetLastUserRecord(useCase user.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		log.Println("API CALL: UpdateUser ")
 
-		usr := models.User{}
+		userId, _ := strconv.ParseUint(c.Params("id"), 10, 64)
+		record, err := useCase.GetLastUserRecord(uint(userId))
 
-		err := c.BodyParser(&usr)
-
-		if err != nil {
-			return c.JSON(fiber.Map{
-				"error": err.Error(),
-			})
-		}
-
-		userResult, err := useCase.SetPreferredSubstance(usr.ID, usr.PreferredSubstanceID)
 		if err != nil {
 			return c.JSON(fiber.Map{
 				"error": err.Error(),
@@ -200,7 +199,7 @@ func GetLastUserRecords(useCase user.UseCase) fiber.Handler {
 		}
 
 		return c.JSON(fiber.Map{
-			"user": userResult,
+			"data": record,
 		})
 	}
 }
