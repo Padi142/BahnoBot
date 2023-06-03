@@ -4,8 +4,6 @@ ADD . /go/src/bahno_bot
 
 WORKDIR /go/src/bahno_bot
 
-RUN touch ./.env
-
 RUN go mod tidy
 
 RUN go build -o /build/bahno_bot
@@ -24,7 +22,7 @@ WORKDIR /bahno_bot
 
 COPY --from=builder /build/bahno_bot /bahno_bot
 
-COPY ./.env /bahno_bot
+COPY ./.env.example ./.env* /bahno_bot/
 
 COPY ./docs/ /bahno_bot/docs
 
