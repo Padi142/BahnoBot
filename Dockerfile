@@ -4,6 +4,8 @@ ADD . /go/src/bahno_bot
 
 WORKDIR /go/src/bahno_bot
 
+RUN touch ./.env
+
 RUN go mod tidy
 
 RUN go build -o /build/bahno_bot
@@ -21,8 +23,6 @@ FROM alpine:3.17.3 as final
 WORKDIR /bahno_bot
 
 COPY --from=builder /build/bahno_bot /bahno_bot
-
-RUN touch ./.env
 
 COPY ./.env /bahno_bot
 
