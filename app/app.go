@@ -1,7 +1,8 @@
 package app
 
 import (
-	// "bahno_bot/feature/discord"
+	api "bahno_bot/feature/api"
+	"bahno_bot/feature/discord"
 	"bahno_bot/generic/database"
 	"strconv"
 
@@ -9,9 +10,9 @@ import (
 )
 
 type Application struct {
-	Env *Env
-	Db  *gorm.DB
-	// Discord *discord.Service
+	Env     *Env
+	Db      *gorm.DB
+	Discord *discord.Service
 }
 
 func App() Application {
@@ -20,7 +21,15 @@ func App() Application {
 	port, _ := strconv.Atoi(app.Env.DBPort)
 	app.Db = database.NewDatabase(app.Env.DBHost, app.Env.DBUser, app.Env.DBPass, app.Env.DBName, uint(port))
 
-	// app.Discord = discord.CreateDiscord(app.Env.DiscordToken)
+	app.Discord = discord.CreateDiscord(app.Env.DiscordToken)
+
+	api.NewApiService(app.Db)
+
+	app.Discord.InitCommands(app.Db, app.Env.AppID)
+	err := app.Discord.OpenBot()
+	if err != nil {
+		panic(err)
+	}
 
 	// recordRepo := record.NewRecordRepository(app.Db)
 	// record := models.Record{Amount: 69, SubstanceID: 2, UserID: 1, Time: time.Now()}

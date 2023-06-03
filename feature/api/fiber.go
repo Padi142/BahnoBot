@@ -3,15 +3,16 @@ package fiber_feature
 import (
 	_ "bahno_bot/docs"
 	"bahno_bot/feature/api/routes"
+	"bahno_bot/generic/record"
+	"bahno_bot/generic/substance"
 	"bahno_bot/generic/user"
 	"github.com/gofiber/fiber/v2"
 	fiberSwagger "github.com/swaggo/fiber-swagger"
-	"go.mongodb.org/mongo-driver/mongo"
+	"gorm.io/gorm"
 	"log"
-	"time"
 )
 
-// @title Swagger Example API
+// NewApiService @title BahnoBot api
 // @version 1.0
 // @description This is a sample server Bahno server.
 // @termsOfService http://swagger.io/terms/
@@ -23,16 +24,23 @@ import (
 // @host localhost:8081
 // @BasePath /
 // @schemes http
-func NewApiService(db *mongo.Database) {
+func NewApiService(db *gorm.DB) {
 	log.Println("Creating fiber api service")
 	app := fiber.New()
 
-	userRepo := user.NewUserRepository(*db, "users")
+	userRepo := user.NewUserRepository(db)
+	userUseCase := user.NewUserUseCase(userRepo)
 
-	userUseCase := user.NewUserUseCase(userRepo, time.Duration(time.Second*10))
+	recordRepo := record.NewRecordRepository(db)
+	recordUseCase := record.NewRecordUseCase(recordRepo)
+
+	substancesRepo := substance.NewSubstanceRepository(db)
+	substanceUseCase := substance.NewSubstanceUseCase(substancesRepo)
 
 	api := app.Group("/api")
-	routes.UserRoter(api, userUseCase)
+	routes.UserRouter(api, userUseCase)
+	routes.RecordsRoute(api, recordUseCase)
+	routes.SubstancesRouter(api, substanceUseCase)
 
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 	go ApiListen(app)
