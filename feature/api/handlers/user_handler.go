@@ -15,9 +15,8 @@ import (
 // @Description Gets the basic info about every user
 // @Tags user
 // @Produce json
-// @Produce json
 // @Success 200 {object} map[string]interface{}
-// @Router /api/user [get]
+// @Router /api/users [get]
 func GetUsers(useCase user.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		log.Println("API CALL: GetUsers")
@@ -45,7 +44,7 @@ func GetUsers(useCase user.UseCase) fiber.Handler {
 // @Param id path int true "Account ID"
 // @Produce json
 // @Success 200 {object} map[string]interface{}
-// @Router /api/user/{id} [get]
+// @Router /api/users/{id} [get]
 func GetUser(useCase user.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// if userIdString == "" {
@@ -83,10 +82,10 @@ func GetUser(useCase user.UseCase) fiber.Handler {
 // @Description Gets the basic user info by their discord id
 // @Tags user
 // @Produce json
-// @Param discordId query string true "ID of the user to retrieve"
+// @Param discord_id path string true "Discord ID of wanted user"
 // @Produce json
 // @Success 200 {object} map[string]interface{}
-// @Router /api/user_discord [get]
+// @Router /api/users/discord_id/{discord_id} [get]
 func GetUserDiscord(useCase user.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		discord_id := c.Params("discord_id")
@@ -121,7 +120,7 @@ func GetUserDiscord(useCase user.UseCase) fiber.Handler {
 // @Body user query models.User{} true "new user body"
 // @Produce json
 // @Success 200 {object} map[string]interface{}
-// @Router /api/user [put]
+// @Router /api/users [put]
 func UpdateUser(useCase user.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		log.Println("API CALL: UpdateUser ")
@@ -158,7 +157,7 @@ func UpdateUser(useCase user.UseCase) fiber.Handler {
 // @Body user query models.User{} true "new user body"
 // @Produce json
 // @Success 200 {object} map[string]interface{}
-// @Router /api/user/{id}/records [get]
+// @Router /api/users/{id}/records [get]
 func GetUserRecords(useCase user.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
@@ -186,7 +185,7 @@ func GetUserRecords(useCase user.UseCase) fiber.Handler {
 // @Body user query models.User{} true "new user body"
 // @Produce json
 // @Success 200 {object} map[string]interface{}
-// @Router /api/user/{id}/records/last [get]
+// @Router /api/users/{id}/records/last [get]
 func GetLastUserRecord(useCase user.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
