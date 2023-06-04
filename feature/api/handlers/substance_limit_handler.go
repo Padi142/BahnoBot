@@ -3,13 +3,20 @@ package handlers
 import (
 	"bahno_bot/generic/models"
 	"bahno_bot/generic/substance_limit"
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
 
+// GetSubstanceLimit godoc
+// @Summary get substance limit by id
+// @Tags substance_limit
+// @Produce json
+// @Param user_id path int true "User ID"
+// @Param substance_id path int true "Substance ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/substance_limits/{user_id}:{substance_id} [get]
 func GetSubstanceLimit(useCase substance_limit.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		userId, _ := strconv.Atoi(c.Params("user_id"))
@@ -29,22 +36,26 @@ func GetSubstanceLimit(useCase substance_limit.UseCase) fiber.Handler {
 	}
 }
 
+// CreateSubstanceLimit godoc
+// @Summary create new substance limit
+// @Tags substance_limit
+// @Produce json
+// @Body subsatnce_limit query models.SubstanceLimit{} true "new substance limit body"
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /api/substance_limits [post]
 func CreateSubstanceLimit(useCase substance_limit.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		log.Println("COCOEOJKFEWJFEKWFFEWKJWEFKWEJF")
 		substance_limit := models.SubstanceLimit{}
 
-		log.Printf("COZE %v\n", substance_limit)
 		if err := c.BodyParser(&substance_limit); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		}
 
-		log.Printf("COZE %v\n", substance_limit)
 		if err := useCase.CreateSubstanceLimit(substance_limit); err != nil {
 			return fiber.NewError(fiber.StatusNotFound, err.Error())
 		}
 
-		log.Printf("COZE %v\n", substance_limit)
 		return c.Status(fiber.StatusCreated).JSON(&substance_limit)
 	}
 }

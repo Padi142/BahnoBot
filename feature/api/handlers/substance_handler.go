@@ -38,6 +38,7 @@ func GetAllSubstances(useCase substance.UseCase) fiber.Handler {
 // @Summary get substance by id
 // @Tags substance
 // @Produce json
+// @Param id path int true "Substance ID"
 // @Success 200 {object} map[string]interface{}
 // @Router /api/substances/{id} [get]
 func GetSubstance(useCase substance.UseCase) fiber.Handler {
