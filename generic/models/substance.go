@@ -1,11 +1,11 @@
 package models
 
 type Substance struct {
-	ID                       uint 
-	Label				     string
-	Value                    string
-	RecommendedDosageMin     uint 
-	RecommendedDosageMax     uint 
-	RecommendedPauseMin 	 uint 
-	RecommendedPauseMax      uint 
+	ID                   uint   `json:"id"`
+	Label                string `json:"label"`
+	Value                string `json:"value"`
+	RecommendedDosageMin uint   `json:"recommended_dosage_min"`
+	RecommendedDosageMax uint   `json:"recommended_dosage_max"`
+	RecommendedPauseMin  uint   `json:"recommended_pause_min"`
+	RecommendedPauseMax  uint   `json:"recommended_pause_max"`
 }

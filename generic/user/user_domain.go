@@ -10,4 +10,6 @@ type UserRepository interface {
 	GetUser(id uint) (*models.User, error)
 	GetUserByDiscordId(id string) (*models.User, error)
 	SetPreferredSubstance(userId, substanceId uint) error
+	GetUserRecords(userId uint) ([]models.Record, error)
+	GetUserLastRecord(userId uint) (*models.Record, error)
 }

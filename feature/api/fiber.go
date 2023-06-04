@@ -6,10 +6,11 @@ import (
 	"bahno_bot/generic/record"
 	"bahno_bot/generic/substance"
 	"bahno_bot/generic/user"
+	"log"
+
 	"github.com/gofiber/fiber/v2"
 	fiberSwagger "github.com/swaggo/fiber-swagger"
 	"gorm.io/gorm"
-	"log"
 )
 
 // NewApiService @title BahnoBot api
@@ -29,9 +30,10 @@ func NewApiService(db *gorm.DB) {
 	app := fiber.New()
 
 	userRepo := user.NewUserRepository(db)
+	recordRepo := record.NewRecordRepository(db)
+
 	userUseCase := user.NewUserUseCase(userRepo)
 
-	recordRepo := record.NewRecordRepository(db)
 	recordUseCase := record.NewRecordUseCase(recordRepo)
 
 	substancesRepo := substance.NewSubstanceRepository(db)

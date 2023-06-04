@@ -127,7 +127,6 @@ func (d *Service) BahnakCommand(db *gorm.DB, appId int) error {
 
 func (d *Service) SubstanceCommand(db *gorm.DB, appId int) error {
 	userRepo := user.NewUserRepository(db)
-
 	userUseCase := user.NewUserUseCase(userRepo)
 
 	substanceRepo := substance.NewSubstanceRepository(db)
@@ -287,7 +286,6 @@ func (d *Service) BahnimCommand(db *gorm.DB, appId int) error {
 		LogCommandUse(i.Member.User.Username, command.Name)
 
 		userRepo := user.NewUserRepository(db)
-
 		userUseCase := user.NewUserUseCase(userRepo)
 
 		usr, err := userUseCase.GetProfileByDiscordID(i.Member.User.ID)
@@ -365,10 +363,6 @@ func (d *Service) BahnimCommand(db *gorm.DB, appId int) error {
 }
 
 func (d *Service) LastBahneni(db *gorm.DB, appId int) error {
-	recordRepo := record.NewRecordRepository(db)
-
-	recordUseCase := record.NewRecordUseCase(recordRepo)
-
 	userRepo := user.NewUserRepository(db)
 
 	userUseCase := user.NewUserUseCase(userRepo)
@@ -402,7 +396,7 @@ func (d *Service) LastBahneni(db *gorm.DB, appId int) error {
 			return
 		}
 
-		rec, err := recordUseCase.GetLatestRecord(usr.ID)
+		rec, err := userUseCase.GetLastUserRecord(usr.ID)
 		if err != nil {
 			err = SendInteractionResponse(s, i, err.Error())
 			return
