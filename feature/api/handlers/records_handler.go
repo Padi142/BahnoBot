@@ -6,9 +6,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// GetLastRecord godoc
+// GetAllRecords godoc
 // @Summary gets all records
-// @Description Gets the last record from records for given user id and substance id, if no substance id provided, gets last record for all substances
 // @Tags record
 // @Produce json
 // @Success 200 {object} map[string]interface{}
