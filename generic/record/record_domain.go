@@ -6,5 +6,6 @@ import (
 
 type RecordRepository interface {
 	Create(record models.Record) error
-	GetAll() ([]models.Record, error)
+	GetAll(userId uint) (records []models.Record, err error)
+	GetLast(userId uint) (records models.Record, err error)
 }

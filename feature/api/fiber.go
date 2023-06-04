@@ -10,6 +10,7 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	fiberSwagger "github.com/swaggo/fiber-swagger"
 	"gorm.io/gorm"
 )
@@ -29,16 +30,13 @@ import (
 func NewApiService(db *gorm.DB) {
 	log.Println("Creating fiber api service")
 	app := fiber.New()
+	app.Use(logger.New())
 
-	userRepo := user.NewUserRepository(db)
-	recordRepo := record.NewRecordRepository(db)
+	userUseCase := user.NewUserUseCase(db)
 
-	userUseCase := user.NewUserUseCase(userRepo)
+	recordUseCase := record.NewRecordUseCase(db)
 
-	recordUseCase := record.NewRecordUseCase(recordRepo)
-
-	substancesRepo := substance.NewSubstanceRepository(db)
-	substanceUseCase := substance.NewSubstanceUseCase(substancesRepo)
+	substanceUseCase := substance.NewSubstanceUseCase(db)
 
 	substanceLimitRepo := substance_limit.NewSubstanceRepository(db)
 	substanceLimitUseCase := substance_limit.NewSubstanceUseCase(substanceLimitRepo)

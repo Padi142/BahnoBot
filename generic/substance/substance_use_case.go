@@ -2,15 +2,16 @@ package substance
 
 import (
 	"bahno_bot/generic/models"
+	"gorm.io/gorm"
 )
 
 type UseCase struct {
 	substanceRepository SubstanceRepository
 }
 
-func NewSubstanceUseCase(substanceRepository SubstanceRepository) UseCase {
+func NewSubstanceUseCase(db *gorm.DB) UseCase {
 	return UseCase{
-		substanceRepository: substanceRepository,
+		substanceRepository: NewSubstanceRepository(db),
 	}
 }
 func (useCase UseCase) GetSubstances() ([]models.Substance, error) {

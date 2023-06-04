@@ -2,19 +2,21 @@ package record
 
 import (
 	"bahno_bot/generic/models"
+
+	"gorm.io/gorm"
 )
 
 type UseCase struct {
 	recordRepository RecordRepository
 }
 
-func NewRecordUseCase(recordRepository RecordRepository) UseCase {
+func NewRecordUseCase(db *gorm.DB) UseCase {
 	return UseCase{
-		recordRepository: recordRepository,
+		recordRepository: NewRecordRepository(db),
 	}
 }
 
-func CreateRecordUseCase(recordRepository RecordRepository, record models.Record) error {
+func (useCase UseCase) CreateRecordUseCase(recordRepository RecordRepository, record models.Record) error {
 	err := recordRepository.Create(record)
 
 	if err != nil {
@@ -36,4 +38,7 @@ func (useCase UseCase) CreateNewRecord(userId uint, record models.Record) (*mode
 
 func (useCase UseCase) GetAllRecords() ([]models.Record, error) {
 	return useCase.GetAllRecords()
+}
+func (useCase UseCase) GetLastRecord(userId uint) (models.Record, error) {
+	return useCase.recordRepository.GetLast(userId)
 }
