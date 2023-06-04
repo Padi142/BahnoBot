@@ -4,7 +4,6 @@ import (
 	api "bahno_bot/feature/api"
 	"bahno_bot/feature/discord"
 	"bahno_bot/generic/database"
-	"strconv"
 
 	"gorm.io/gorm"
 )
@@ -17,8 +16,7 @@ type Application struct {
 func App() Application {
 	app := Application{}
 	app.Env = NewEnv()
-	port, _ := strconv.Atoi(app.Env.DBPort)
-	app.Db = database.NewDatabase(app.Env.DBHost, app.Env.DBUser, app.Env.DBPass, app.Env.DBName, uint(port))
+	app.Db = database.NewDatabase(app.Env.DBHost, app.Env.DBUser, app.Env.DBPass, app.Env.DBName, uint(app.Env.DBPort))
 
 	err := discord.OpenBot(app.Env.DiscordToken, app.Env.AppID, app.Db)
 	if err != nil {
