@@ -7,6 +7,7 @@ import (
 	"bahno_bot/generic/substance"
 	"bahno_bot/generic/user"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	fiberSwagger "github.com/swaggo/fiber-swagger"
 	"gorm.io/gorm"
 	"log"
@@ -27,15 +28,13 @@ import (
 func NewApiService(db *gorm.DB) {
 	log.Println("Creating fiber api service")
 	app := fiber.New()
+	app.Use(logger.New())
 
-	userRepo := user.NewUserRepository(db)
-	userUseCase := user.NewUserUseCase(userRepo)
+	userUseCase := user.NewUserUseCase(db)
 
-	recordRepo := record.NewRecordRepository(db)
-	recordUseCase := record.NewRecordUseCase(recordRepo)
+	recordUseCase := record.NewRecordUseCase(db)
 
-	substancesRepo := substance.NewSubstanceRepository(db)
-	substanceUseCase := substance.NewSubstanceUseCase(substancesRepo)
+	substanceUseCase := substance.NewSubstanceUseCase(db)
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello bahno world!")

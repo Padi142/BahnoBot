@@ -6,7 +6,7 @@ import (
 )
 
 type recordRepository struct {
-	database *gorm.DB 
+	database *gorm.DB
 }
 
 func NewRecordRepository(db *gorm.DB) RecordRepository {
@@ -15,8 +15,8 @@ func NewRecordRepository(db *gorm.DB) RecordRepository {
 	}
 }
 
-func (ur *recordRepository) Create(record models.Record) ( err error) {
-	result :=  ur.database.Create(&record);
+func (ur *recordRepository) Create(record models.Record) (err error) {
+	result := ur.database.Create(&record)
 	err = result.Error
 
 	return
@@ -29,7 +29,7 @@ func (ur *recordRepository) GetAll(userId uint) (records []models.Record, err er
 }
 
 func (ur *recordRepository) GetLast(userId uint) (record models.Record, err error) {
-	ur.database.Last(&record, userId);
+	ur.database.Preload("Substance").Last(&record, userId)
 
-	return 
+	return
 }

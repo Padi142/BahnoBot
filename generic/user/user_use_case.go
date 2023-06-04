@@ -2,15 +2,16 @@ package user
 
 import (
 	"bahno_bot/generic/models"
+	"gorm.io/gorm"
 )
 
 type UseCase struct {
 	userRepository UserRepository
 }
 
-func NewUserUseCase(userRepository UserRepository) UseCase {
+func NewUserUseCase(db *gorm.DB) UseCase {
 	return UseCase{
-		userRepository: userRepository,
+		userRepository: NewUserRepository(db),
 	}
 }
 func (useCase UseCase) CreateUser(user models.User) error {
