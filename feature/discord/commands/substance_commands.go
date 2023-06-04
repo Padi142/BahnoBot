@@ -3,9 +3,10 @@ package commands
 import (
 	"bahno_bot/generic/substance"
 	"bahno_bot/generic/user"
-	"github.com/bwmarrin/discordgo"
 	"log"
 	"strconv"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 func SetPreferredSubstanceCommand(name string, substanceUseCase substance.UseCase, userUseCase user.UseCase) Command {
