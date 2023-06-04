@@ -15,11 +15,9 @@ func NewSubstanceUseCase(db *gorm.DB) UseCase {
 	}
 }
 func (useCase UseCase) GetSubstances() ([]models.Substance, error) {
-	substances, err := useCase.substanceRepository.GetAll()
+	return useCase.substanceRepository.GetAll()
+}
 
-	if err != nil {
-		return nil, err
-	}
-
-	return substances, nil
+func (useCase UseCase) GetSubstance(id uint) (models.Substance, error) {
+	return useCase.substanceRepository.Get(id)
 }

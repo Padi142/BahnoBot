@@ -14,39 +14,21 @@ func NewUserUseCase(db *gorm.DB) UseCase {
 		userRepository: NewUserRepository(db),
 	}
 }
-func (useCase UseCase) CreateUser(user models.User) error {
 
-	err := useCase.userRepository.Create(&user)
-	if err != nil {
-		return err
-	}
-	return nil
+func (useCase UseCase) GetUsers() ([]models.User, error) {
+	return useCase.userRepository.GetAll()
+}
+
+func (useCase UseCase) CreateUser(user models.User) error {
+	return useCase.userRepository.Create(&user)
 }
 
 func (useCase UseCase) GetProfileByID(userID uint) (*models.User, error) {
-	user, err := useCase.userRepository.GetUser(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	if user == nil {
-		return nil, nil
-	}
-
-	return user, nil
+	return useCase.userRepository.GetUser(userID)
 }
 
-func (useCase UseCase) GetProfileByDiscordID(userID string) (*models.User, error) {
-	user, err := useCase.userRepository.GetUserByDiscordId(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	if user == nil {
-		return nil, nil
-	}
-
-	return user, nil
+func (useCase UseCase) GetProfileByDiscordID(discordId string) (*models.User, error) {
+	return useCase.userRepository.GetUserByDiscordId(discordId)
 }
 
 func (useCase UseCase) GetOrCreateUser(userID uint) (*models.User, error) {
@@ -104,4 +86,16 @@ func (useCase UseCase) SetPreferredSubstance(userId, substanceId uint) (*models.
 	}
 
 	return user, nil
+}
+
+func (useCase UseCase) GetUserRecords(userId uint) ([]models.Record, error) {
+	return useCase.userRepository.GetUserRecords(userId)
+	// user, _ := useCase.userRepository.GetUser(userId)
+
+	// return user.Records, nil
+}
+
+func (useCase UseCase) GetLastUserRecord(userId uint) (*models.Record, error) {
+	return useCase.userRepository.GetUserLastRecord(userId)
+
 }

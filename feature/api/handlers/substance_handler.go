@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"bahno_bot/generic/substance"
-	"github.com/gofiber/fiber/v2"
 	"log"
 	"net/http"
+	"strconv"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 // GetAllSubstances godoc
@@ -17,7 +19,6 @@ import (
 // @Router /api/substance/all [get]
 func GetAllSubstances(useCase substance.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-
 		log.Println("API CALL: GetAllSubstances")
 
 		substanceResult, err := useCase.GetSubstances()
@@ -31,5 +32,23 @@ func GetAllSubstances(useCase substance.UseCase) fiber.Handler {
 		return c.JSON(fiber.Map{
 			"substances": substanceResult,
 		})
+	}
+}
+
+func GetSubstance(useCase substance.UseCase) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		substanceId, _ := strconv.Atoi(c.Params("id"))
+		substanceResult, err := useCase.GetSubstance(uint(substanceId))
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(fiber.Map{
+				"error": err.Error(),
+			})
+
+		}
+		return c.JSON(fiber.Map{
+			"substances": substanceResult,
+		})
+
 	}
 }

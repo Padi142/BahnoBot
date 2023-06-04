@@ -2,6 +2,7 @@ package record
 
 import (
 	"bahno_bot/generic/models"
+
 	"gorm.io/gorm"
 )
 

@@ -2,6 +2,7 @@ package user
 
 import (
 	"bahno_bot/generic/models"
+
 	"gorm.io/gorm"
 )
 
@@ -16,19 +17,17 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 }
 
 func (ur *userRepository) Create(user *models.User) error {
-	result := ur.database.Create(user)
-
-	return result.Error
+	return ur.database.Create(user).Error
 }
 
 func (ur *userRepository) GetAll() (users []models.User, err error) {
-	ur.database.Preload("PreferredSubstance").Find(&users)
+	err = ur.database.Preload("PreferredSubstance").Find(&users).Error
 
 	return
 }
 
 func (ur *userRepository) GetUser(id uint) (user *models.User, err error) {
-	ur.database.Preload("PreferredSubstance").First(&user, id)
+	err = ur.database.Preload("PreferredSubstance").First(&user, id).Error
 
 	return
 }
@@ -39,7 +38,17 @@ func (ur *userRepository) GetUserByDiscordId(id string) (user *models.User, err 
 }
 
 func (ur *userRepository) SetPreferredSubstance(userId, substanceId uint) error {
-	ur.database.Model(&models.User{}).Where("id = ?", userId).Update("preferred_substance_id", substanceId)
+	return ur.database.Model(&models.User{}).Where("id = ?", userId).Update("preferred_substance_id", substanceId).Error
+}
 
-	return nil
+func (ur *userRepository) GetUserRecords(userId uint) (records []models.Record, err error) {
+	err = ur.database.Where("user_id = ?", userId).Find(&records).Error
+
+	return
+}
+
+func (ur *userRepository) GetUserLastRecord(userId uint) (record *models.Record, err error) {
+	err = ur.database.Where("user_id = ?", userId).Last(&record).Error
+
+	return
 }
