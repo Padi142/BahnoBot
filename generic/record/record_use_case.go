@@ -39,3 +39,6 @@ func (useCase UseCase) CreateNewRecord(userId uint, record models.Record) (*mode
 func (useCase UseCase) GetAllRecords() ([]models.Record, error) {
 	return useCase.GetAllRecords()
 }
+func (useCase UseCase) GetLastRecord(userId uint) (models.Record, error) {
+	return useCase.recordRepository.GetLast(userId)
+}

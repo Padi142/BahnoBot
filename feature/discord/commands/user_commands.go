@@ -198,7 +198,7 @@ func LastBahneniCommand(name string, userUseCase user.UseCase, recordUseCase rec
 			return
 		}
 
-		rec, err := recordUseCase.GetLatestRecord(usr.ID)
+		rec, err := recordUseCase.GetLastRecord(usr.ID)
 		if err != nil {
 			err = SendInteractionResponse(s, i, err.Error())
 			return
