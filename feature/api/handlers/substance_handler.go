@@ -30,7 +30,7 @@ func GetAllSubstances(useCase substance.UseCase) fiber.Handler {
 
 		}
 		return c.JSON(fiber.Map{
-			"substances": substanceResult,
+			"data": substanceResult,
 		})
 	}
 }
@@ -47,7 +47,7 @@ func GetSubstance(useCase substance.UseCase) fiber.Handler {
 
 		}
 		return c.JSON(fiber.Map{
-			"substances": substanceResult,
+			"data": substanceResult,
 		})
 
 	}

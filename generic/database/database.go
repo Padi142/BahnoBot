@@ -14,18 +14,16 @@ func NewDatabase(host, user, password, dbname string, port uint) (db *gorm.DB) {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
-		log.Printf("Couldn't connect to database (host=%s).", host)
+		log.Printf("Couldn't connect to database (host=%s).\n", host)
 		return
 	}
 
-	err = db.AutoMigrate(&models.Substance{}, &models.User{}, &models.Record{})
+	err = db.AutoMigrate(&models.Substance{}, &models.User{}, &models.Record{}, &models.SubstanceLimit{})
 
 	if err != nil {
 		log.Printf(err.Error())
 		return
 	}
-	// db.AutoMigrate(&models.User{})
-	// db.AutoMigrate(&models.Record{})
 
 	return
 }

@@ -5,6 +5,7 @@ import (
 	"bahno_bot/feature/api/routes"
 	"bahno_bot/generic/record"
 	"bahno_bot/generic/substance"
+	"bahno_bot/generic/substance_limit"
 	"bahno_bot/generic/user"
 	"log"
 
@@ -39,6 +40,9 @@ func NewApiService(db *gorm.DB) {
 	substancesRepo := substance.NewSubstanceRepository(db)
 	substanceUseCase := substance.NewSubstanceUseCase(substancesRepo)
 
+	substanceLimitRepo := substance_limit.NewSubstanceRepository(db)
+	substanceLimitUseCase := substance_limit.NewSubstanceUseCase(substanceLimitRepo)
+
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello bahno world!")
 	})
@@ -47,6 +51,7 @@ func NewApiService(db *gorm.DB) {
 	routes.UserRouter(api, userUseCase)
 	routes.RecordsRoute(api, recordUseCase)
 	routes.SubstancesRouter(api, substanceUseCase)
+	routes.SubstanceLimitsRouter(api, substanceLimitUseCase)
 
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 	go ApiListen(app)

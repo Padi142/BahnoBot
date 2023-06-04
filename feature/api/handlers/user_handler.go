@@ -73,7 +73,7 @@ func GetUser(useCase user.UseCase) fiber.Handler {
 
 		}
 		return c.JSON(fiber.Map{
-			"user": userResult,
+			"data": userResult,
 		})
 	}
 }
@@ -108,7 +108,7 @@ func GetUserDiscord(useCase user.UseCase) fiber.Handler {
 
 		}
 		return c.JSON(fiber.Map{
-			"user": userResult,
+			"data": userResult,
 		})
 	}
 }
@@ -144,7 +144,7 @@ func UpdateUser(useCase user.UseCase) fiber.Handler {
 		}
 
 		return c.JSON(fiber.Map{
-			"user": userResult,
+			"data": userResult,
 		})
 	}
 }
