@@ -16,32 +16,15 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/record/last": {
+        "/api/records": {
             "get": {
-                "description": "Gets the last record from records for given user id and substance id, if no substance id provided, gets last record for all substances",
                 "produces": [
-                    "application/json",
                     "application/json"
                 ],
                 "tags": [
                     "record"
                 ],
-                "summary": "gets last record for given user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID of the user to retrieve last record",
-                        "name": "userId",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "value of the substance",
-                        "name": "substance",
-                        "in": "query"
-                    }
-                ],
+                "summary": "gets all records",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -53,11 +36,10 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/substance/all": {
+        "/api/substances": {
             "get": {
-                "description": "Gets al substances that are by default accessible to user",
+                "description": "Gets all substances that are by default accessible to user",
                 "produces": [
-                    "application/json",
                     "application/json"
                 ],
                 "tags": [
@@ -75,11 +57,30 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user": {
+        "/api/substances/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "substance"
+                ],
+                "summary": "get substance by id",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users": {
             "get": {
                 "description": "Gets the basic info about every user",
                 "produces": [
-                    "application/json",
                     "application/json"
                 ],
                 "tags": [
@@ -117,7 +118,38 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user/{id}": {
+        "/api/users/discord_id/{discord_id}": {
+            "get": {
+                "description": "Gets the basic user info by their discord id",
+                "produces": [
+                    "application/json",
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "gets user by their discord id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Discord ID of wanted user",
+                        "name": "discord_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/{id}": {
             "get": {
                 "description": "Gets the basic user info by their id",
                 "produces": [
@@ -148,7 +180,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user/{id}/records": {
+        "/api/users/{id}/records": {
             "get": {
                 "produces": [
                     "application/json",
@@ -178,7 +210,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user/{id}/records/last": {
+        "/api/users/{id}/records/last": {
             "get": {
                 "produces": [
                     "application/json",
@@ -194,37 +226,6 @@ const docTemplate = `{
                         "description": "Account ID",
                         "name": "id",
                         "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/api/user_discord": {
-            "get": {
-                "description": "Gets the basic user info by their discord id",
-                "produces": [
-                    "application/json",
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "gets user by their discord id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID of the user to retrieve",
-                        "name": "discordId",
-                        "in": "query",
                         "required": true
                     }
                 ],

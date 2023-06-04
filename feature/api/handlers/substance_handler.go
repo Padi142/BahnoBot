@@ -11,12 +11,11 @@ import (
 
 // GetAllSubstances godoc
 // @Summary gets all substances from db
-// @Description Gets al substances that are by default accessible to user
+// @Description Gets all substances that are by default accessible to user
 // @Tags substance
 // @Produce json
-// @Produce json
 // @Success 200 {object} map[string]interface{}
-// @Router /api/substance/all [get]
+// @Router /api/substances [get]
 func GetAllSubstances(useCase substance.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		log.Println("API CALL: GetAllSubstances")
@@ -35,6 +34,12 @@ func GetAllSubstances(useCase substance.UseCase) fiber.Handler {
 	}
 }
 
+// GetSubstance godoc
+// @Summary get substance by id
+// @Tags substance
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /api/substances/{id} [get]
 func GetSubstance(useCase substance.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		substanceId, _ := strconv.Atoi(c.Params("id"))
