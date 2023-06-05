@@ -98,6 +98,14 @@ func SubstanceHandler(s *Service, appId string, userUseCase user.UseCase, substa
 }
 
 func RegisterCommand(s *Service, command commands.Command, appId string) error {
+	s.discord.AddHandler(func(
+		s *discordgo.Session,
+		i *discordgo.InteractionCreate,
+	) {
+		command.Handler(s, i)
+	})
+
+
 	if val, ok := s.commands[command.Command.Name]; ok {
 		if val.Description == command.Command.Description &&
 			reflect.DeepEqual(val.Options, command.Command.Options) {
@@ -108,11 +116,5 @@ func RegisterCommand(s *Service, command commands.Command, appId string) error {
 	log.Printf("Registering command - %s\n", command.Command.Name)
 
 	_, err := s.discord.ApplicationCommandCreate(appId, "", &command.Command)
-	s.discord.AddHandler(func(
-		s *discordgo.Session,
-		i *discordgo.InteractionCreate,
-	) {
-		command.Handler(s, i)
-	})
 	return err
 }
