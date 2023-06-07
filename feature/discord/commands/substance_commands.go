@@ -128,8 +128,8 @@ func PrintAllSubstances(name string, substanceUseCase substance.UseCase) Command
 		for _, sub := range substances {
 			field := discordgo.MessageEmbedField{
 				Name:   sub.Label,
-				Value:  "Doporucena davka: " + strconv.FormatFloat(sub.RecommendedDosageMin, 'f', -1, 64) + " - " + strconv.FormatFloat(sub.RecommendedDosageMax, 'f', -1, 64) + "g",
-				Inline: true,
+				Value:  "Doporucena davka: " + strconv.FormatFloat(sub.RecommendedDosageMin, 'f', -1, 64) + " - " + strconv.FormatFloat(sub.RecommendedDosageMax, 'f', -1, 64) + "g \n" + "Doporucena pauza: " + strconv.FormatFloat(sub.RecommendedPauseMin, 'f', -1, 64) + " - " + strconv.FormatFloat(sub.RecommendedPauseMax, 'f', -1, 64) + "dni",
+				Inline: false,
 			}
 			fields = append(fields, &field)
 		}

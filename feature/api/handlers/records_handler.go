@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bahno_bot/generic/record"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -14,7 +15,10 @@ import (
 // @Router /api/records [get]
 func GetAllRecords(useCase record.UseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		records, err := useCase.GetAllRecords()
+
+		userId, err := strconv.ParseUint(c.Params("id"), 10, 64)
+
+		records, err := useCase.GetAllRecords(uint(userId))
 
 		if err != nil {
 			return c.JSON(fiber.Map{
