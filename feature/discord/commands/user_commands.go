@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -84,7 +85,7 @@ func BahnimCommand(name string, substanceUseCase substance.UseCase, userUseCase 
 				Choices:     choices,
 			},
 			{
-				Type:        discordgo.ApplicationCommandOptionInteger,
+				Type:        discordgo.ApplicationCommandOptionNumber,
 				Name:        "amount",
 				Description: "Zadej množství v gramech",
 				Required:    false,
@@ -110,7 +111,7 @@ func BahnimCommand(name string, substanceUseCase substance.UseCase, userUseCase 
 		}
 
 		oldSubstance := usr.PreferredSubstance.Value
-		amount := 0
+		amount := 0.0
 
 		options := i.ApplicationCommandData().Options
 
@@ -124,7 +125,7 @@ func BahnimCommand(name string, substanceUseCase substance.UseCase, userUseCase 
 		}
 
 		if opt, ok := optionMap["amount"]; ok {
-			amount = int(opt.IntValue())
+			amount = float64(opt.IntValue())
 		}
 
 		found := false
@@ -134,7 +135,7 @@ func BahnimCommand(name string, substanceUseCase substance.UseCase, userUseCase 
 					Substance:   sub,
 					SubstanceID: sub.ID,
 					CreatedAt:   time.Now(),
-					Amount:      int(amount),
+					Amount:      amount,
 					UserID:      usr.ID,
 				}
 
@@ -159,6 +160,12 @@ func BahnimCommand(name string, substanceUseCase substance.UseCase, userUseCase 
 						log.Println(err)
 					}
 					return
+				}
+				if rec.Substance.Value == "weed" {
+					_, err := s.ChannelMessageSend(i.ChannelID, "https://media.discordapp.net/attachments/662506011499823115/876479116180869120/smoka.gif")
+					if err != nil {
+						log.Println(err)
+					}
 				}
 				found = true
 			}
@@ -228,4 +235,222 @@ func LastBahneniCommand(name string, userUseCase user.UseCase, recordUseCase rec
 		err = SendInteractionResponseEmbed(s, i, embed)
 	}
 	return Command{Command: command, Handler: handler}
+}
+
+func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase record.UseCase) ComplexCommand {
+	pageSize := 5
+	page := 1
+	command := discordgo.ApplicationCommand{
+		Name:        name,
+		Description: "Prints your records",
+	}
+
+	backButton := discordgo.Button{
+		Label:    "<",
+		Style:    discordgo.SuccessButton,
+		CustomID: "all_records_button_back",
+		Disabled: true,
+	}
+	forwardButton := discordgo.Button{
+		Label:    ">",
+		Style:    discordgo.SuccessButton,
+		CustomID: "all_records_button_forward",
+		Disabled: false,
+	}
+
+	handler := func(
+		s *discordgo.Session,
+		i *discordgo.InteractionCreate,
+	) {
+		page = 0
+		//Only handle this command
+		if i.ApplicationCommandData().Name != command.Name {
+			return
+		}
+		LogCommandUse(i.Member.User.Username, command.Name)
+
+		usr, err := userUseCase.GetProfileByDiscordID(i.Member.User.ID)
+		if err != nil {
+			err = SendInteractionResponse(s, i, err.Error())
+			return
+		}
+
+		records, _, err := recordUseCase.GetPagedRecords(usr.ID, page, pageSize)
+		if err != nil {
+			err = SendInteractionResponse(s, i, err.Error())
+			return
+		}
+		var fields []*discordgo.MessageEmbedField
+
+		for _, rec := range records {
+			field := discordgo.MessageEmbedField{
+				Name:   rec.Substance.Label,
+				Value:  "📅: " + GetTimeStamp(rec.CreatedAt, "f") + "\n ⚖️:" + strconv.FormatFloat(rec.Amount, 'f', -1, 64),
+				Inline: false,
+			}
+			fields = append(fields, &field)
+		}
+
+		if len(records) == 0 {
+			field := discordgo.MessageEmbedField{
+				Name:  "Zadne zaznamy == spatny bahnak 😪",
+				Value: "",
+			}
+			fields = append(fields, &field)
+		}
+
+		embed := &discordgo.MessageEmbed{
+			Title:  "Zaznamy:",
+			Color:  0x00ff00,
+			Fields: fields,
+			//Footer: &discordgo.MessageEmbedFooter{
+			//	Text: strconv.Itoa(page) + "/" + strconv.Itoa(int(math.Ceil(float64(count)/float64(pageSize)))),
+			//},
+		}
+
+		// Create an action row component
+		actionRow := discordgo.ActionsRow{
+			Components: []discordgo.MessageComponent{&backButton, &forwardButton},
+		}
+
+		err = SendInteractionResponseComplex(s, i, embed, []discordgo.MessageComponent{&actionRow})
+		if err != nil {
+			log.Println("Error executing discord command: " + name)
+			log.Println(err.Error())
+		}
+	}
+	forwardButtonHandler := func(
+		s *discordgo.Session,
+		i *discordgo.InteractionCreate,
+	) {
+		if i.MessageComponentData().CustomID == forwardButton.CustomID {
+			page++
+			usr, err := userUseCase.GetProfileByDiscordID(i.Member.User.ID)
+			records, _, err := recordUseCase.GetPagedRecords(usr.ID, page, pageSize)
+
+			if err != nil {
+				log.Println(err.Error())
+			}
+
+			var fields []*discordgo.MessageEmbedField
+
+			for _, rec := range records {
+
+				field := discordgo.MessageEmbedField{
+					Name:   rec.Substance.Label,
+					Value:  "📅: " + GetTimeStamp(rec.CreatedAt, "f") + "\n ⚖️:" + strconv.FormatFloat(rec.Amount, 'f', -1, 64),
+					Inline: false,
+				}
+				fields = append(fields, &field)
+			}
+
+			if len(records) == 0 {
+				field := discordgo.MessageEmbedField{
+					Name:  "Zadne dalsi zaznamy",
+					Value: "",
+				}
+				fields = append(fields, &field)
+				forwardButton.Disabled = true
+			}
+			backButton.Disabled = false
+
+			embed := &discordgo.MessageEmbed{
+				Title:  "Zaznamy:",
+				Color:  0x00ff00,
+				Fields: fields,
+				//Footer: &discordgo.MessageEmbedFooter{
+				//	Text: strconv.Itoa(page) + "/" + strconv.Itoa(int(math.Ceil(float64(count)/float64(pageSize)))),
+				//},
+			}
+
+			actionRow := discordgo.ActionsRow{
+				Components: []discordgo.MessageComponent{&backButton, &forwardButton},
+			}
+			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseUpdateMessage,
+				Data: &discordgo.InteractionResponseData{
+					Components: []discordgo.MessageComponent{&actionRow},
+					Embeds: []*discordgo.MessageEmbed{
+						embed,
+					},
+				},
+			})
+			if err != nil {
+				log.Println("Error executing discord command: " + name)
+				log.Println(err.Error())
+			}
+		}
+	}
+	backButtonHandler := func(
+		s *discordgo.Session,
+		i *discordgo.InteractionCreate,
+	) {
+		if i.MessageComponentData().CustomID == backButton.CustomID {
+			page--
+			usr, err := userUseCase.GetProfileByDiscordID(i.Member.User.ID)
+			records, _, err := recordUseCase.GetPagedRecords(usr.ID, page, pageSize)
+
+			if err != nil {
+				log.Println(err.Error())
+			}
+
+			var fields []*discordgo.MessageEmbedField
+
+			for _, rec := range records {
+
+				field := discordgo.MessageEmbedField{
+					Name:   rec.Substance.Label,
+					Value:  "📅: " + GetTimeStamp(rec.CreatedAt, "f") + "\n ⚖️:" + strconv.FormatFloat(rec.Amount, 'f', -1, 64),
+					Inline: false,
+				}
+				fields = append(fields, &field)
+			}
+
+			if len(records) == 0 {
+				field := discordgo.MessageEmbedField{
+					Name:  "Zadne zaznamy == spatny bahnak 😪",
+					Value: "",
+				}
+				fields = append(fields, &field)
+				forwardButton.Disabled = true
+				backButton.Disabled = false
+
+			}
+
+			embed := &discordgo.MessageEmbed{
+				Title:  "Zaznamy:",
+				Color:  0x00ff00,
+				Fields: fields,
+				//Footer: &discordgo.MessageEmbedFooter{
+				//	Text: strconv.Itoa(page) + "/" + strconv.Itoa(int(math.Ceil(float64(count)/float64(pageSize)))),
+				//},
+			}
+
+			if page == 0 {
+				backButton.Disabled = true
+			}
+			forwardButton.Disabled = false
+			actionRow := discordgo.ActionsRow{
+				Components: []discordgo.MessageComponent{&backButton, &forwardButton},
+			}
+			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseUpdateMessage,
+				Data: &discordgo.InteractionResponseData{
+					Components: []discordgo.MessageComponent{&actionRow},
+					Embeds: []*discordgo.MessageEmbed{
+						embed,
+					},
+				},
+			})
+			if err != nil {
+				log.Println("Error executing discord command: " + name)
+				log.Println(err.Error())
+			}
+		}
+	}
+	return ComplexCommand{Command: command,
+		Handler: handler,
+		Subhandlers: []func(s *discordgo.Session, i *discordgo.InteractionCreate){
+			forwardButtonHandler, backButtonHandler,
+		}}
 }

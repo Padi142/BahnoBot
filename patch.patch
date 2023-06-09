@@ -1,0 +1,241 @@
+diff --git a/feature/api/fiber.go b/feature/api/fiber.go
+index f56526e..302f3f8 100644
+--- a/feature/api/fiber.go
++++ b/feature/api/fiber.go
+@@ -31,10 +31,10 @@ func NewApiService(db *gorm.DB) {
+ 	app := fiber.New()
+ 	app.Use(logger.New())
+ 
+-	userUseCase := user.NewUserUseCase(db)
++	userRepository := user.NewUserRepository(db)
+ 
++	userUseCase := user.NewUserUseCase(userRepository)
+ 	recordUseCase := record.NewRecordUseCase(db)
+-
+ 	substanceUseCase := substance.NewSubstanceUseCase(db)
+ 
+ 	app.Get("/", func(c *fiber.Ctx) error {
+diff --git a/feature/discord/commands/user_commands.go b/feature/discord/commands/user_commands.go
+index 2adcaf2..f8ab6c3 100644
+--- a/feature/discord/commands/user_commands.go
++++ b/feature/discord/commands/user_commands.go
+@@ -36,7 +36,7 @@ func BahnakCommand(name string, userUseCase user.UseCase) Command {
+ 			return
+ 		}
+ 		if profile == nil {
+-			newProfile := models.User{ID: 0, DiscordID: userId, Username: i.Member.User.Username, PreferredSubstanceID: 1}
++			newProfile := user.User{ID: 0, DiscordID: userId, Username: i.Member.User.Username, PreferredSubstanceID: 1}
+ 			err = userUseCase.CreateUser(newProfile)
+ 			err = SendInteractionResponse(s, i, "Vytvarim bahnici ucet")
+ 
+diff --git a/feature/discord/discord.go b/feature/discord/discord.go
+index 6b83b44..decf445 100644
+--- a/feature/discord/discord.go
++++ b/feature/discord/discord.go
+@@ -19,7 +19,9 @@ type Service struct {
+ }
+ 
+ func OpenBot(token string, appId int, db *gorm.DB) error {
+-	userUseCase := user.NewUserUseCase(db)
++	userRepository := user.NewUserRepository(db)
++
++	userUseCase := user.NewUserUseCase(userRepository)
+ 	substanceUseCase := substance.NewSubstanceUseCase(db)
+ 	recordUseCase := record.NewRecordUseCase(db)
+ 	service := Service{}
+diff --git a/generic/user/user_domain.go b/generic/user/user_domain.go
+index 6485641..b41dfa6 100644
+--- a/generic/user/user_domain.go
++++ b/generic/user/user_domain.go
+@@ -4,12 +4,33 @@ import (
+ 	"bahno_bot/generic/models"
+ )
+ 
+-type UserRepository interface {
+-	Create(user *models.User) error
+-	GetAll() ([]models.User, error)
+-	GetUser(id uint) (*models.User, error)
+-	GetUserByDiscordId(id string) (*models.User, error)
++type User struct {
++	ID                   uint             `json:"id"`
++	Username             string           `json:"username"`
++	PreferredSubstanceID uint             `json:"preferred_substance_id"`
++	PreferredSubstance   models.Substance `json:"preferred_substance"`
++	DiscordID            string           `json:"discord_id"`
++	Records              []models.Record  `gorm:"many2many:records;" json:"records"`
++}
++
++type Repository interface {
++	Create(user *User) error
++	GetAll() ([]User, error)
++	GetUser(id uint) (*User, error)
++	GetUserByDiscordId(id string) (*User, error)
+ 	SetPreferredSubstance(userId, substanceId uint) error
+ 	GetUserRecords(userId uint) ([]models.Record, error)
+ 	GetUserLastRecord(userId uint) (*models.Record, error)
+ }
++
++type UseCase interface {
++	GetUsers() ([]User, error)
++	CreateUser(user User) error
++	GetProfileByID(userID uint) (*User, error)
++	GetProfileByDiscordID(discordID string) (*User, error)
++	GetOrCreateUser(userID uint) (*User, error)
++	GetOrCreateDiscordUser(discordID string) (*User, error)
++	SetPreferredSubstance(userID uint, substanceID uint) (*User, error)
++	GetUserRecords(userID uint) ([]models.Record, error)
++	GetLastUserRecord(userID uint) (*models.Record, error)
++}
+diff --git a/generic/user/user_repository.go b/generic/user/user_repository.go
+index 72c3cb8..033ad9d 100644
+--- a/generic/user/user_repository.go
++++ b/generic/user/user_repository.go
+@@ -10,35 +10,35 @@ type userRepository struct {
+ 	database *gorm.DB
+ }
+ 
+-func NewUserRepository(db *gorm.DB) UserRepository {
++func NewUserRepository(db *gorm.DB) Repository {
+ 	return &userRepository{
+ 		database: db,
+ 	}
+ }
+ 
+-func (ur *userRepository) Create(user *models.User) error {
++func (ur *userRepository) Create(user *User) error {
+ 	return ur.database.Create(user).Error
+ }
+ 
+-func (ur *userRepository) GetAll() (users []models.User, err error) {
++func (ur *userRepository) GetAll() (users []User, err error) {
+ 	err = ur.database.Preload("PreferredSubstance").Find(&users).Error
+ 
+ 	return
+ }
+ 
+-func (ur *userRepository) GetUser(id uint) (user *models.User, err error) {
++func (ur *userRepository) GetUser(id uint) (user *User, err error) {
+ 	err = ur.database.Preload("PreferredSubstance").First(&user, id).Error
+ 
+ 	return
+ }
+-func (ur *userRepository) GetUserByDiscordId(id string) (user *models.User, err error) {
++func (ur *userRepository) GetUserByDiscordId(id string) (user *User, err error) {
+ 	err = ur.database.Preload("PreferredSubstance").Where("discord_id = ?", id).First(&user).Error
+ 
+ 	return
+ }
+ 
+ func (ur *userRepository) SetPreferredSubstance(userId, substanceId uint) error {
+-	return ur.database.Model(&models.User{}).Where("id = ?", userId).Update("preferred_substance_id", substanceId).Error
++	return ur.database.Model(&User{}).Where("id = ?", userId).Update("preferred_substance_id", substanceId).Error
+ }
+ 
+ func (ur *userRepository) GetUserRecords(userId uint) (records []models.Record, err error) {
+diff --git a/generic/user/user_use_case.go b/generic/user/user_use_case.go
+index e515008..4e61a0c 100644
+--- a/generic/user/user_use_case.go
++++ b/generic/user/user_use_case.go
+@@ -2,42 +2,41 @@ package user
+ 
+ import (
+ 	"bahno_bot/generic/models"
+-	"gorm.io/gorm"
+ )
+ 
+-type UseCase struct {
+-	userRepository UserRepository
++type useCase struct {
++	userRepository Repository
+ }
+ 
+-func NewUserUseCase(db *gorm.DB) UseCase {
+-	return UseCase{
+-		userRepository: NewUserRepository(db),
++func NewUserUseCase(userRepository Repository) UseCase {
++	return &useCase{
++		userRepository: userRepository,
+ 	}
+ }
+ 
+-func (useCase UseCase) GetUsers() ([]models.User, error) {
++func (useCase *useCase) GetUsers() ([]User, error) {
+ 	return useCase.userRepository.GetAll()
+ }
+ 
+-func (useCase UseCase) CreateUser(user models.User) error {
++func (useCase *useCase) CreateUser(user User) error {
+ 	return useCase.userRepository.Create(&user)
+ }
+ 
+-func (useCase UseCase) GetProfileByID(userID uint) (*models.User, error) {
++func (useCase *useCase) GetProfileByID(userID uint) (*User, error) {
+ 	return useCase.userRepository.GetUser(userID)
+ }
+ 
+-func (useCase UseCase) GetProfileByDiscordID(discordId string) (*models.User, error) {
++func (useCase *useCase) GetProfileByDiscordID(discordId string) (*User, error) {
+ 	return useCase.userRepository.GetUserByDiscordId(discordId)
+ }
+ 
+-func (useCase UseCase) GetOrCreateUser(userID uint) (*models.User, error) {
++func (useCase *useCase) GetOrCreateUser(userID uint) (*User, error) {
+ 	user, err := useCase.userRepository.GetUser(userID)
+ 	if err == nil {
+ 		return user, nil
+ 	}
+ 
+-	err = useCase.userRepository.Create(&models.User{ID: userID})
++	err = useCase.userRepository.Create(&User{ID: userID})
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -50,18 +49,18 @@ func (useCase UseCase) GetOrCreateUser(userID uint) (*models.User, error) {
+ 	return user, nil
+ }
+ 
+-func (useCase UseCase) GetOrCreateDiscordUser(discordId string) (*models.User, error) {
+-	user, err := useCase.userRepository.GetUserByDiscordId(discordId)
++func (useCase *useCase) GetOrCreateDiscordUser(discordID string) (*User, error) {
++	user, err := useCase.userRepository.GetUserByDiscordId(discordID)
+ 	if err == nil {
+ 		return user, nil
+ 	}
+ 
+-	err = useCase.userRepository.Create(&models.User{DiscordID: discordId})
++	err = useCase.userRepository.Create(&User{DiscordID: discordID})
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 
+-	user, err = useCase.userRepository.GetUserByDiscordId(discordId)
++	user, err = useCase.userRepository.GetUserByDiscordId(discordID)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -69,7 +68,7 @@ func (useCase UseCase) GetOrCreateDiscordUser(discordId string) (*models.User, e
+ 	return user, nil
+ }
+ 
+-func (useCase UseCase) SetPreferredSubstance(userId, substanceId uint) (*models.User, error) {
++func (useCase *useCase) SetPreferredSubstance(userId, substanceId uint) (*User, error) {
+ 	err := useCase.userRepository.SetPreferredSubstance(userId, substanceId)
+ 
+ 	if err != nil {
+@@ -88,14 +87,14 @@ func (useCase UseCase) SetPreferredSubstance(userId, substanceId uint) (*models.
+ 	return user, nil
+ }
+ 
+-func (useCase UseCase) GetUserRecords(userId uint) ([]models.Record, error) {
++func (useCase *useCase) GetUserRecords(userId uint) ([]models.Record, error) {
+ 	return useCase.userRepository.GetUserRecords(userId)
+ 	// user, _ := useCase.userRepository.GetUser(userId)
+ 
+ 	// return user.Records, nil
+ }
+ 
+-func (useCase UseCase) GetLastUserRecord(userId uint) (*models.Record, error) {
++func (useCase *useCase) GetLastUserRecord(userId uint) (*models.Record, error) {
+ 	return useCase.userRepository.GetUserLastRecord(userId)
+ 
+ }

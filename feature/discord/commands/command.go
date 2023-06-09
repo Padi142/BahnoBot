@@ -13,6 +13,13 @@ type Command struct {
 	Name    string
 }
 
+type ComplexCommand struct {
+	Command     discordgo.ApplicationCommand
+	Handler     func(s *discordgo.Session, i *discordgo.InteractionCreate)
+	Subhandlers []func(s *discordgo.Session, i *discordgo.InteractionCreate)
+	Name        string
+}
+
 func SendInteractionResponse(s *discordgo.Session, i *discordgo.InteractionCreate, message string) error {
 	err := s.InteractionRespond(
 		i.Interaction,
@@ -20,6 +27,26 @@ func SendInteractionResponse(s *discordgo.Session, i *discordgo.InteractionCreat
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: message,
+			},
+		},
+	)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func SendInteractionResponseComplex(s *discordgo.Session, i *discordgo.InteractionCreate, embed *discordgo.MessageEmbed, components []discordgo.MessageComponent) error {
+	err := s.InteractionRespond(
+		i.Interaction,
+		&discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Embeds: []*discordgo.MessageEmbed{
+					embed,
+				},
+				Components: components,
 			},
 		},
 	)

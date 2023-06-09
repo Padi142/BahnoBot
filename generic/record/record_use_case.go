@@ -16,7 +16,7 @@ func NewRecordUseCase(db *gorm.DB) UseCase {
 	}
 }
 
-func (useCase UseCase) CreateRecordUseCase(recordRepository RecordRepository, record models.Record) error {
+func (us UseCase) CreateRecordUseCase(recordRepository RecordRepository, record models.Record) error {
 	err := recordRepository.Create(record)
 
 	if err != nil {
@@ -26,8 +26,8 @@ func (useCase UseCase) CreateRecordUseCase(recordRepository RecordRepository, re
 	return nil
 }
 
-func (useCase UseCase) CreateNewRecord(userId uint, record models.Record) (*models.Record, error) {
-	err := useCase.recordRepository.Create(record)
+func (us UseCase) CreateNewRecord(userId uint, record models.Record) (*models.Record, error) {
+	err := us.recordRepository.Create(record)
 
 	if err != nil {
 		return nil, err
@@ -36,9 +36,13 @@ func (useCase UseCase) CreateNewRecord(userId uint, record models.Record) (*mode
 	return &record, nil
 }
 
-func (useCase UseCase) GetAllRecords() ([]models.Record, error) {
-	return useCase.GetAllRecords()
+func (us UseCase) GetAllRecords(userId uint) ([]models.Record, error) {
+	return us.recordRepository.GetAll(userId)
 }
-func (useCase UseCase) GetLastRecord(userId uint) (models.Record, error) {
-	return useCase.recordRepository.GetLast(userId)
+
+func (us UseCase) GetPagedRecords(userId uint, page, pageSize int) ([]models.Record, int64, error) {
+	return us.recordRepository.GetAllPaged(userId, page, pageSize)
+}
+func (us UseCase) GetLastRecord(userId uint) (models.Record, error) {
+	return us.recordRepository.GetLast(userId)
 }
