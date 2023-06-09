@@ -141,7 +141,10 @@ func RegisterCommandComplex(s *Service, command commands.ComplexCommand, appId s
 	) {
 		if i.Type == discordgo.InteractionMessageComponent {
 
-			command.Subhandlers[0](s, i)
+			for _, handler := range command.Subhandlers {
+				handler(s, i)
+			}
+			//command.Subhandlers[0](s, i)
 
 			//s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			//	Type: discordgo.InteractionResponseUpdateMessage,

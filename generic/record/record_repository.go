@@ -29,7 +29,7 @@ func (ur *recordRepository) GetAll(userId uint) (records []models.Record, err er
 }
 
 func (ur *recordRepository) GetAllPaged(userId uint, page, pageSize int) (records []models.Record, count int64, err error) {
-	ur.database.Where("user_id = ?", userId).Preload("Substance").Limit(pageSize).Offset(page * pageSize).Find(&records).Count(&count)
+	ur.database.Where("user_id = ?", userId).Order("created_at DESC").Preload("Substance").Limit(pageSize).Offset(page * pageSize).Find(&records)
 
 	return
 }
