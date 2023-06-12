@@ -3,6 +3,7 @@ package app
 import (
 	api "bahno_bot/feature/api"
 	"bahno_bot/feature/discord"
+	"bahno_bot/feature/telegram"
 	"bahno_bot/generic/database"
 
 	"gorm.io/gorm"
@@ -22,6 +23,13 @@ func App() Application {
 	if err != nil {
 		panic(err)
 	}
+
+	go func() {
+		err = telegram.OpenBot(app.Env.TelegramToken)
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	api.NewApiService(app.Db)
 

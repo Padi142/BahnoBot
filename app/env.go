@@ -7,14 +7,15 @@ import (
 )
 
 type Env struct {
-	AppEnv       string `mapstructure:"APP_ENV"`
-	DiscordToken string `mapstructure:"DISCORD_TOKEN"`
-	DBHost       string `mapstructure:"DB_HOST"`
-	DBPort       int    `mapstructure:"DB_PORT"`
-	DBUser       string `mapstructure:"DB_USER"`
-	DBPass       string `mapstructure:"DB_PASS"`
-	DBName       string `mapstructure:"DB_NAME"`
-	AppID        string `mapstructure:"APP_ID"`
+	AppEnv        string `mapstructure:"APP_ENV"`
+	DiscordToken  string `mapstructure:"DISCORD_TOKEN"`
+	TelegramToken string `mapstructure:"TELEGRAM_TOKEN"`
+	DBHost        string `mapstructure:"DB_HOST"`
+	DBPort        int    `mapstructure:"DB_PORT"`
+	DBUser        string `mapstructure:"DB_USER"`
+	DBPass        string `mapstructure:"DB_PASS"`
+	DBName        string `mapstructure:"DB_NAME"`
+	AppID         string `mapstructure:"APP_ID"`
 }
 
 func NewEnv() *Env {
