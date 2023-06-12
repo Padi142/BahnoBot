@@ -35,7 +35,7 @@ func OpenBot(telegramToken string) error {
 
 		switch update.Message.Command() {
 		case "bahno":
-			log.Printf("Telegram user: %s ran bahno command", update.Message.Chat.FirstName)
+			log.Printf("Telegram user: %s ran bahno command", update.Message.Chat.Title)
 			if err = telegram_commands.BahnoCommand(update, bot.tgbot); err != nil {
 				log.Printf("telegram bahno error: %s", err)
 			}
