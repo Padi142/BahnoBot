@@ -26,6 +26,11 @@ func (ur *substanceRepository) Get(id uint) (substance models.Substance, err err
 	return
 }
 
+func (ur *substanceRepository) GetByValue(value string) (substance models.Substance, err error) {
+	err = ur.database.Where("value = ?", value).First(&substance).Error
+	return
+}
+
 func (ur *substanceRepository) Create(substance models.Substance) error {
 	return ur.database.Create(&substance).Error
 }

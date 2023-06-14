@@ -145,3 +145,74 @@ func PrintAllSubstances(name string, substanceUseCase substance.UseCase) Command
 	}
 	return Command{Command: command, Handler: handler}
 }
+func SubstanceInfo(name string, substanceUseCase substance.UseCase) Command {
+
+	substances, err := substanceUseCase.GetSubstances()
+	if err != nil {
+		log.Println(err.Error())
+		return Command{}
+	}
+
+	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(substances))
+
+	for i, sub := range substances {
+		choices[i] = &discordgo.ApplicationCommandOptionChoice{
+			Name:  sub.Label,
+			Value: sub.Value,
+		}
+	}
+
+	command := discordgo.ApplicationCommand{
+		Name:        name,
+		Description: "Tells you more info about a substance",
+		Options: []*discordgo.ApplicationCommandOption{
+
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "substance",
+				Description: "What substance do you want to know more about?",
+				Required:    true,
+				Choices:     choices,
+			},
+		},
+	}
+
+	handler := func(
+		s *discordgo.Session,
+		i *discordgo.InteractionCreate,
+	) {
+		//Only handle this command
+		if i.ApplicationCommandData().Name != command.Name {
+			return
+		}
+		LogCommandUse(i.Member.User.Username, command.Name)
+
+		if i.ApplicationCommandData().Options == nil {
+			err = SendInteractionResponse(s, i, "Napis validni substanci pls ")
+
+		}
+
+		value := i.ApplicationCommandData().Options[0].Value.(string)
+
+		sbs, err := substanceUseCase.GetSubstanceByValue(value)
+
+		if err != nil {
+			log.Println(err)
+		}
+
+		embed := &discordgo.MessageEmbed{
+			Title: sbs.Label,
+			Color: 0x00ff00,
+			Fields: []*discordgo.MessageEmbedField{
+				{
+					Name:   "",
+					Value:  sbs.Description,
+					Inline: true,
+				},
+			},
+		}
+		err = SendInteractionResponseEmbed(s, i, embed)
+
+	}
+	return Command{Command: command, Handler: handler}
+}

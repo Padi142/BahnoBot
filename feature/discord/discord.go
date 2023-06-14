@@ -97,6 +97,7 @@ func UserHandler(s *Service, appId string, userUseCase user.UseCase, substanceUs
 func SubstanceHandler(s *Service, appId string, userUseCase user.UseCase, substanceUseCase substance.UseCase) error {
 	err := RegisterCommand(s, commands.SetPreferredSubstanceCommand("set_substance", substanceUseCase, userUseCase), appId)
 	err = RegisterCommand(s, commands.PrintAllSubstances("substances", substanceUseCase), appId)
+	err = RegisterCommand(s, commands.SubstanceInfo("bahnove_info", substanceUseCase), appId)
 
 	return err
 }
