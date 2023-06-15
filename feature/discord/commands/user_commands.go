@@ -34,7 +34,6 @@ func BahnakCommand(name string, userUseCase user.UseCase) Command {
 
 		if err != nil {
 			log.Println(err.Error())
-			return
 		}
 		if profile == nil {
 			newProfile := models.User{ID: 0, DiscordID: userId, Username: i.Member.User.Username, PreferredSubstanceID: 1}
@@ -125,7 +124,7 @@ func BahnimCommand(name string, substanceUseCase substance.UseCase, userUseCase 
 		}
 
 		if opt, ok := optionMap["amount"]; ok {
-			amount = float64(opt.IntValue())
+			amount = opt.FloatValue()
 		}
 
 		found := false

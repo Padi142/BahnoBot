@@ -50,23 +50,25 @@ func (useCase UseCase) GetOrCreateUser(userID uint) (*models.User, error) {
 	return user, nil
 }
 
-func (useCase UseCase) GetOrCreateDiscordUser(discordId string) (*models.User, error) {
+func (useCase UseCase) GetOrCreateDiscordUser(discordId string) (*models.User, bool, error) {
+	createdNew := false
 	user, err := useCase.userRepository.GetUserByDiscordId(discordId)
 	if err == nil {
-		return user, nil
+		return user, false, nil
 	}
 
-	err = useCase.userRepository.Create(&models.User{DiscordID: discordId})
+	err = useCase.userRepository.Create(&models.User{DiscordID: discordId, PreferredSubstanceID: 1})
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
+	createdNew = true
 
 	user, err = useCase.userRepository.GetUserByDiscordId(discordId)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
-	return user, nil
+	return user, createdNew, nil
 }
 
 func (useCase UseCase) SetPreferredSubstance(userId, substanceId uint) (*models.User, error) {
