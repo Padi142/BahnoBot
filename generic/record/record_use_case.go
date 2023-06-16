@@ -2,7 +2,7 @@ package record
 
 import (
 	"bahno_bot/generic/models"
-
+	"errors"
 	"gorm.io/gorm"
 )
 
@@ -45,4 +45,28 @@ func (us UseCase) GetPagedRecords(userId uint, page, pageSize int) ([]models.Rec
 }
 func (us UseCase) GetLastRecord(userId uint) (models.Record, error) {
 	return us.recordRepository.GetLast(userId)
+}
+
+func (us UseCase) GetLastRecordForSubstance(substanceId, userId uint) (models.Record, error) {
+	return us.recordRepository.GetLastForSubstance(substanceId, userId)
+}
+
+func (us UseCase) GetLeaderboardTime(durationString string) ([]models.LeaderboardOccurrence, error) {
+	duration := models.GetTimeDuration(durationString)
+	if duration == "" {
+		return nil, errors.New("duration not valid")
+	}
+	date := models.GetTimeValue(duration)
+
+	return us.recordRepository.GetLeaderboardInTimePeriod(date)
+}
+
+func (us UseCase) GetLeaderboardTimeForSubstance(durationString string, substance uint) ([]models.LeaderboardOccurrence, error) {
+	duration := models.GetTimeDuration(durationString)
+	if duration == "" {
+		return nil, errors.New("duration not valid")
+	}
+	date := models.GetTimeValue(duration)
+
+	return us.recordRepository.GetLeaderboardForSubstanceInTimePeriod(substance, date)
 }

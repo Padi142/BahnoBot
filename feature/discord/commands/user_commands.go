@@ -453,3 +453,118 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 			forwardButtonHandler, backButtonHandler,
 		}}
 }
+func MuzuBahnit(name string, userUseCase user.UseCase, recordUseCase record.UseCase, substanceUseCase substance.UseCase) Command {
+
+	substances, err := substanceUseCase.GetSubstances()
+	if err != nil {
+		log.Println(err.Error())
+		return Command{}
+	}
+	substanceChoices := make([]*discordgo.ApplicationCommandOptionChoice, len(substances))
+
+	for i, sub := range substances {
+		substanceChoices[i] = &discordgo.ApplicationCommandOptionChoice{
+			Name:  sub.Label,
+			Value: sub.Value,
+		}
+	}
+
+	command := discordgo.ApplicationCommand{
+		Name:        name,
+		Description: "Rekne ti jestli muzes bahnit",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "substance",
+				Description: "Vyber si jakou substanci chceš bahnit",
+				Choices:     substanceChoices,
+			},
+		},
+	}
+
+	handler := func(
+		s *discordgo.Session,
+		i *discordgo.InteractionCreate,
+	) {
+		//Only handle this command
+		if i.ApplicationCommandData().Name != command.Name {
+			return
+		}
+		LogCommandUse(i.Member.User.Username, command.Name)
+		usr, err := userUseCase.GetProfileByDiscordID(i.Member.User.ID)
+		if err != nil {
+			err = SendInteractionResponse(s, i, err.Error())
+			return
+		}
+
+		chosenSubstance := usr.PreferredSubstance.Value
+
+		options := i.ApplicationCommandData().Options
+
+		optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
+		for _, opt := range options {
+			optionMap[opt.Name] = opt
+		}
+
+		if opt, ok := optionMap["substance"]; ok {
+			chosenSubstance = opt.StringValue()
+		}
+
+		sub, err := substanceUseCase.GetSubstanceByValue(chosenSubstance)
+		if err != nil {
+			err = SendInteractionResponse(s, i, err.Error())
+			return
+		}
+
+		rec, err := recordUseCase.GetLastRecordForSubstance(sub.ID, usr.ID)
+		if err != nil {
+			err = SendInteractionResponse(s, i, err.Error())
+			return
+		}
+
+		duration := time.Now().Sub(rec.CreatedAt)
+		hours := int(duration.Hours())
+		log.Println(time.Now().Hour())
+		log.Println(rec.CreatedAt.Hour())
+		log.Println(hours)
+		embed := discordgo.MessageEmbed{}
+		if hours < int(sub.RecommendedDosageMin*24) {
+			embed = discordgo.MessageEmbed{
+				Title: "POZOR :warnign: bahneni nedoporucujeme...",
+				Color: 0x00ff00,
+				Fields: []*discordgo.MessageEmbedField{
+					{
+						Name:   "Doporucena pauza: ",
+						Value:  strconv.Itoa(int(rec.Substance.RecommendedPauseMin*24)) + "h - " + strconv.Itoa(int(rec.Substance.RecommendedPauseMax*24)) + "h",
+						Inline: true,
+					},
+					{
+						Name:   "Vase pauza: ",
+						Value:  strconv.Itoa(int(hours)) + "h, Posledni bahneni: " + GetTimeStamp(rec.CreatedAt, "F"),
+						Inline: true,
+					},
+				},
+			}
+		} else {
+			embed = discordgo.MessageEmbed{
+				Title: "Muzes bahnit :thumbsup:",
+				Color: 0x00ff00,
+				Fields: []*discordgo.MessageEmbedField{
+					{
+						Name:   "Doporucena pauza: ",
+						Value:  strconv.Itoa(int(rec.Substance.RecommendedPauseMin*24)) + "h - " + strconv.Itoa(int(rec.Substance.RecommendedPauseMax*24)) + "h",
+						Inline: true,
+					},
+					{
+						Name:   "Vase pauza: ",
+						Value:  strconv.Itoa(int(hours)) + "h, Posledni bahneni: " + GetTimeStamp(rec.CreatedAt, "F"),
+						Inline: true,
+					},
+				},
+			}
+		}
+
+		err = SendInteractionResponseEmbed(s, i, &embed)
+	}
+	return Command{Command: command, Handler: handler}
+}
