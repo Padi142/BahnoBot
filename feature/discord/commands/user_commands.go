@@ -6,10 +6,11 @@ import (
 	"bahno_bot/generic/substance"
 	"bahno_bot/generic/user"
 	"fmt"
-	"github.com/bwmarrin/discordgo"
 	"log"
 	"strconv"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 func BahnakCommand(name string, userUseCase user.UseCase) Command {
@@ -523,14 +524,14 @@ func MuzuBahnit(name string, userUseCase user.UseCase, recordUseCase record.UseC
 		}
 
 		duration := time.Now().Sub(rec.CreatedAt)
-		hours := int(duration.Hours())
+		hours := duration.Hours()
 		log.Println(time.Now().Hour())
 		log.Println(rec.CreatedAt.Hour())
 		log.Println(hours)
 		embed := discordgo.MessageEmbed{}
-		if hours < int(sub.RecommendedDosageMin*24) {
+		if hours < sub.RecommendedDosageMin*24 {
 			embed = discordgo.MessageEmbed{
-				Title: "POZOR :warnign: bahneni nedoporucujeme...",
+				Title: "POZOR :warning: bahneni nedoporucujeme...",
 				Color: 0x00ff00,
 				Fields: []*discordgo.MessageEmbedField{
 					{

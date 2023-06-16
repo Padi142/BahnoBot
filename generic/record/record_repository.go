@@ -2,8 +2,9 @@ package record
 
 import (
 	"bahno_bot/generic/models"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type recordRepository struct {
@@ -79,7 +80,7 @@ func (ur *recordRepository) GetLast(userId uint) (record models.Record, err erro
 }
 
 func (ur *recordRepository) GetLastForSubstance(substanceId, userId uint) (record models.Record, err error) {
-	ur.database.Where("used_id = ?", userId).Where("substance_id = ?", substanceId).Order("created_at asc").Limit(1).Find(&record)
+	ur.database.Preload("Substance").Where("user_id = ?", userId).Where("substance_id = ?", substanceId).Last(&record)
 
 	return
 }
