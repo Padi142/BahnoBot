@@ -5,12 +5,14 @@ import (
 	"bahno_bot/generic/record"
 	"bahno_bot/generic/substance"
 	"bahno_bot/generic/user"
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"gorm.io/gorm"
 )
 
 func BahnakCommand(name string, userUseCase user.UseCase) Command {
@@ -226,7 +228,7 @@ func LastBahneniCommand(name string, userUseCase user.UseCase, recordUseCase rec
 				},
 				{
 					Name:   "Dose: ",
-					Value:  fmt.Sprintf("%dg", rec.Amount),
+					Value:  fmt.Sprintf("%.2fg", rec.Amount),
 					Inline: true,
 				},
 			},
@@ -455,19 +457,22 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 		}}
 }
 func MuzuBahnit(name string, userUseCase user.UseCase, recordUseCase record.UseCase, substanceUseCase substance.UseCase) Command {
-
 	substances, err := substanceUseCase.GetSubstances()
 	if err != nil {
 		log.Println(err.Error())
 		return Command{}
 	}
+
 	substanceChoices := make([]*discordgo.ApplicationCommandOptionChoice, len(substances))
+	substancesMap := make(map[string]models.Substance)
 
 	for i, sub := range substances {
 		substanceChoices[i] = &discordgo.ApplicationCommandOptionChoice{
 			Name:  sub.Label,
 			Value: sub.Value,
 		}
+
+		substancesMap[sub.Value] = sub
 	}
 
 	command := discordgo.ApplicationCommand{
@@ -501,7 +506,6 @@ func MuzuBahnit(name string, userUseCase user.UseCase, recordUseCase record.UseC
 		chosenSubstance := usr.PreferredSubstance.Value
 
 		options := i.ApplicationCommandData().Options
-
 		optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
 		for _, opt := range options {
 			optionMap[opt.Name] = opt
@@ -511,61 +515,65 @@ func MuzuBahnit(name string, userUseCase user.UseCase, recordUseCase record.UseC
 			chosenSubstance = opt.StringValue()
 		}
 
-		sub, err := substanceUseCase.GetSubstanceByValue(chosenSubstance)
-		if err != nil {
-			err = SendInteractionResponse(s, i, err.Error())
+		// Invalid value from discord picker (shouldn't happen)
+		sub, ok := substancesMap[chosenSubstance]
+		if !ok {
+			log.Println()
 			return
 		}
+
+		title := "Muzes bahnit :thumbsup:"
+		color := 0xa0fc7e
 
 		rec, err := recordUseCase.GetLastRecordForSubstance(sub.ID, usr.ID)
 		if err != nil {
+
+			// User hasn't started bahnit yet!
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				_ = SendInteractionResponseEmbed(s, i, CreateMuzuBahnitEmbed(title, color, 0, rec, sub, false))
+				return
+			}
+
 			err = SendInteractionResponse(s, i, err.Error())
 			return
 		}
 
-		duration := time.Now().Sub(rec.CreatedAt)
-		hours := duration.Hours()
-		log.Println(time.Now().Hour())
-		log.Println(rec.CreatedAt.Hour())
-		log.Println(hours)
-		embed := discordgo.MessageEmbed{}
-		if hours < sub.RecommendedDosageMin*24 {
-			embed = discordgo.MessageEmbed{
-				Title: "POZOR :warning: bahneni nedoporucujeme...",
-				Color: 0x00ff00,
-				Fields: []*discordgo.MessageEmbedField{
-					{
-						Name:   "Doporucena pauza: ",
-						Value:  strconv.Itoa(int(rec.Substance.RecommendedPauseMin*24)) + "h - " + strconv.Itoa(int(rec.Substance.RecommendedPauseMax*24)) + "h",
-						Inline: true,
-					},
-					{
-						Name:   "Vase pauza: ",
-						Value:  strconv.Itoa(int(hours)) + "h, Posledni bahneni: " + GetTimeStamp(rec.CreatedAt, "F"),
-						Inline: true,
-					},
-				},
-			}
-		} else {
-			embed = discordgo.MessageEmbed{
-				Title: "Muzes bahnit :thumbsup:",
-				Color: 0x00ff00,
-				Fields: []*discordgo.MessageEmbedField{
-					{
-						Name:   "Doporucena pauza: ",
-						Value:  strconv.Itoa(int(rec.Substance.RecommendedPauseMin*24)) + "h - " + strconv.Itoa(int(rec.Substance.RecommendedPauseMax*24)) + "h",
-						Inline: true,
-					},
-					{
-						Name:   "Vase pauza: ",
-						Value:  strconv.Itoa(int(hours)) + "h, Posledni bahneni: " + GetTimeStamp(rec.CreatedAt, "F"),
-						Inline: true,
-					},
-				},
-			}
+		timeDiff := time.Now().Sub(rec.CreatedAt)
+		hoursDiff := timeDiff.Hours()
+
+		if hoursDiff < sub.RecommendedDosageMin*24 {
+			title = "POZOR :warning: bahneni nedoporucujeme..."
+			color = 0xf25c5c
 		}
 
-		err = SendInteractionResponseEmbed(s, i, &embed)
+		err = SendInteractionResponseEmbed(s, i, CreateMuzuBahnitEmbed(title, color, float32(hoursDiff), rec, sub, true))
 	}
 	return Command{Command: command, Handler: handler}
+}
+
+func CreateMuzuBahnitEmbed(title string, color int, hoursDiff float32, rec models.Record, sub models.Substance, validTimestamp bool) *discordgo.MessageEmbed {
+	var lastBahneniStr string
+	// Checks if we should display the datetime
+	if validTimestamp {
+		lastBahneniStr = GetTimeStamp(rec.CreatedAt, "F")
+	} else {
+		lastBahneniStr = "-"
+	}
+
+	return &discordgo.MessageEmbed{
+		Title: title,
+		Color: color,
+		Fields: []*discordgo.MessageEmbedField{
+			{
+				Name:   "Doporucena pauza: ",
+				Value:  fmt.Sprintf("%.2fh - %.2fh", sub.RecommendedPauseMin*24, sub.RecommendedPauseMax*24),
+				Inline: true,
+			},
+			{
+				Name:   "Vase pauza: ",
+				Value:  fmt.Sprintf("%.2fh, Posledni bahneni: %s", hoursDiff, lastBahneniStr),
+				Inline: true,
+			},
+		},
+	}
 }

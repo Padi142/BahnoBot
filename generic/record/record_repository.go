@@ -80,7 +80,8 @@ func (ur *recordRepository) GetLast(userId uint) (record models.Record, err erro
 }
 
 func (ur *recordRepository) GetLastForSubstance(substanceId, userId uint) (record models.Record, err error) {
-	ur.database.Preload("Substance").Where("user_id = ?", userId).Where("substance_id = ?", substanceId).Last(&record)
+	// TODO: Order by created_at and pick the latest record
+	err = ur.database.Preload("Substance").Where("user_id = ?", userId).Where("substance_id = ?", substanceId).Last(&record).Error
 
 	return
 }
