@@ -2,6 +2,8 @@ package record
 
 import (
 	"bahno_bot/generic/models"
+	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -23,13 +25,44 @@ func (ur *recordRepository) Create(record models.Record) (err error) {
 }
 
 func (ur *recordRepository) GetAll(userId uint) (records []models.Record, err error) {
-	ur.database.Where("user_id = ?", userId).Preload("Substance").Find(&records)
+	ur.database.Where("user_id = ?", userId).Order("created_at DESC").Preload("Substance").Preload("User").Find(&records)
 
 	return
 }
 
 func (ur *recordRepository) GetAllPaged(userId uint, page, pageSize int) (records []models.Record, count int64, err error) {
-	ur.database.Where("user_id = ?", userId).Order("created_at DESC").Preload("Substance").Limit(pageSize).Offset(page * pageSize).Find(&records)
+	ur.database.Where("user_id = ?", userId).Order("created_at DESC").Preload("Substance").Preload("User").Limit(pageSize).Offset(page * pageSize).Find(&records)
+
+	return
+}
+
+func (ur *recordRepository) GetAllInTimePeriod(userId uint, time time.Time) (records []models.Record, err error) {
+	ur.database.Where("user_id = ?", userId).Where("created_at >= ?", time).Preload("Substance").Preload("User").Find(&records)
+
+	return
+}
+
+func (ur *recordRepository) GetLeaderboardInTimePeriod(time time.Time) (leaderboard []models.LeaderboardOccurrence, err error) {
+	err = ur.database.Table("records").Select("user_id, COUNT(*) as occurrence").
+		Where("created_at >= ?", time).
+		Group("user_id").
+		Order("occurrence DESC").
+		Preload("Substance").
+		Preload("User").
+		Find(&leaderboard).Error
+
+	return
+}
+
+func (ur *recordRepository) GetLeaderboardForSubstanceInTimePeriod(substanceId uint, time time.Time) (leaderboard []models.LeaderboardOccurrence, err error) {
+	err = ur.database.Table("records").Select("user_id, COUNT(*) as occurrence").
+		Where("substance_id = ?", substanceId).
+		Where("created_at >= ?", time).
+		Group("user_id").
+		Order("occurrence DESC").
+		Preload("Substance").
+		Preload("User").
+		Find(&leaderboard).Error
 
 	return
 }
@@ -41,7 +74,14 @@ func (ur *recordRepository) GetAllPaged(userId uint, page, pageSize int) (record
 //}
 
 func (ur *recordRepository) GetLast(userId uint) (record models.Record, err error) {
-	ur.database.Preload("Substance").Last(&record, userId)
+	ur.database.Where("used_id = ?", userId).Order("created_at asc").Limit(1).Find(&record)
+
+	return
+}
+
+func (ur *recordRepository) GetLastForSubstance(substanceId, userId uint) (record models.Record, err error) {
+	// TODO: Order by created_at and pick the latest record
+	err = ur.database.Preload("Substance").Where("user_id = ?", userId).Where("substance_id = ?", substanceId).Last(&record).Error
 
 	return
 }

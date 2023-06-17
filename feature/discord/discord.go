@@ -88,7 +88,9 @@ func UserHandler(s *Service, appId string, userUseCase user.UseCase, substanceUs
 	err := RegisterCommand(s, commands.BahnakCommand("bahnak", userUseCase), appId)
 	err = RegisterCommand(s, commands.BahnimCommand("bahnim", substanceUseCase, userUseCase, recordUseCase), appId)
 	err = RegisterCommand(s, commands.LastBahneniCommand("last_bahneni", userUseCase, recordUseCase), appId)
-
+	//err = RegisterCommand(s, commands.GetLeaderboardCommand("vim_bahno", substanceUseCase, recordUseCase), appId)
+	err = RegisterCommand(s, commands.GetLeaderboardCommand("leaderboard", substanceUseCase, recordUseCase), appId)
+	err = RegisterCommand(s, commands.MuzuBahnit("muzu_bahnit", userUseCase, recordUseCase, substanceUseCase), appId)
 	err = RegisterCommandComplex(s, commands.GetRecordsCommand("get_records", userUseCase, recordUseCase), appId)
 
 	return err
