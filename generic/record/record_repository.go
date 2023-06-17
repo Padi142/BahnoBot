@@ -74,14 +74,31 @@ func (ur *recordRepository) GetLeaderboardForSubstanceInTimePeriod(substanceId u
 //}
 
 func (ur *recordRepository) GetLast(userId uint) (record models.Record, err error) {
-	ur.database.Where("used_id = ?", userId).Order("created_at asc").Limit(1).Find(&record)
+	err = ur.database.
+		Preload("Substance").
+		Where("user_id = ?", userId).
+		Order("created_at DESC").
+		Limit(1).
+		Find(&record).
+		Error
 
 	return
 }
 
 func (ur *recordRepository) GetLastForSubstance(substanceId, userId uint) (record models.Record, err error) {
-	// TODO: Order by created_at and pick the latest record
-	err = ur.database.Preload("Substance").Where("user_id = ?", userId).Where("substance_id = ?", substanceId).Last(&record).Error
+	res := ur.database.
+		Preload("Substance").
+		Where("user_id = ?", userId).
+		Where("substance_id = ?", substanceId).
+		Order("created_at DESC").
+		Limit(1).
+		Find(&record)
+
+	err = res.Error
+
+	if res.RowsAffected == 0 {
+		err = gorm.ErrRecordNotFound
+	}
 
 	return
 }

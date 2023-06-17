@@ -218,7 +218,7 @@ func LastBahneniCommand(name string, userUseCase user.UseCase, recordUseCase rec
 			Fields: []*discordgo.MessageEmbedField{
 				{
 					Name:   "Substance: ",
-					Value:  rec.Substance.Value,
+					Value:  rec.Substance.Label,
 					Inline: true,
 				},
 				{

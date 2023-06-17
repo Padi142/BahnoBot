@@ -33,14 +33,5 @@ func App() Application {
 
 	api.NewApiService(app.Db)
 
-	// recordRepo := record.NewRecordRepository(app.Db)
-	// record := models.Record{Amount: 69, SubstanceID: 2, UserID: 1, Time: time.Now()}
-	// r, _ := recordRepo.GetLast(1)
-
-	// fmt.Printf("%v", r)
-
-	// userUseCase := user.NewUserUseCase(userRepo, time.Duration(time.Second*10))
-	// userUseCase.GetProfileByID()
-
 	return app
 }
