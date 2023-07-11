@@ -327,7 +327,7 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 	) {
 		if i.MessageComponentData().CustomID == forwardButton.CustomID {
 			page++
-			usr, err := userUseCase.GetProfileByDiscordID(i.Member.User.ID)
+			usr, err := userUseCase.GetProfileByDiscordID(i.Message.Author.ID)
 			records, _, err := recordUseCase.GetPagedRecords(usr.ID, page, pageSize)
 
 			if err != nil {
@@ -389,7 +389,7 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 	) {
 		if i.MessageComponentData().CustomID == backButton.CustomID {
 			page--
-			usr, err := userUseCase.GetProfileByDiscordID(i.Member.User.ID)
+			usr, err := userUseCase.GetProfileByDiscordID(i.Message.Author.ID)
 			records, _, err := recordUseCase.GetPagedRecords(usr.ID, page, pageSize)
 
 			if err != nil {
