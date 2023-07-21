@@ -5,9 +5,10 @@ import (
 	"bahno_bot/generic/record"
 	"bahno_bot/generic/substance"
 	"bahno_bot/generic/user"
-	"gorm.io/gorm"
 	"log"
 	"reflect"
+
+	"gorm.io/gorm"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -80,6 +81,7 @@ func OpenBot(token string, appId string, db *gorm.DB) error {
 
 func GenericHandler(s *Service, appId string) error {
 	err := RegisterCommand(s, commands.BahnoCommand("bahno"), appId)
+	err = RegisterCommand(s, commands.ApiCommand("api"), appId)
 
 	return err
 }
@@ -91,7 +93,7 @@ func UserHandler(s *Service, appId string, userUseCase user.UseCase, substanceUs
 	//err = RegisterCommand(s, commands.GetLeaderboardCommand("vim_bahno", substanceUseCase, recordUseCase), appId)
 	err = RegisterCommand(s, commands.GetLeaderboardCommand("leaderboard", substanceUseCase, recordUseCase), appId)
 	err = RegisterCommand(s, commands.MuzuBahnit("muzu_bahnit", userUseCase, recordUseCase, substanceUseCase), appId)
-	err = RegisterCommandComplex(s, commands.GetRecordsCommand("get_records", userUseCase, recordUseCase), appId)
+	err = RegisterCommandComplex(s, commands.GetRecordsCommand("get_records", userUseCase, recordUseCase, substanceUseCase), appId)
 
 	return err
 }

@@ -36,6 +36,12 @@ func (ur *recordRepository) GetAllPaged(userId uint, page, pageSize int) (record
 	return
 }
 
+func (ur *recordRepository) GetAllPagedForSubstance(userId, substanceId uint, page, pageSize int) (records []models.Record, count int64, err error) {
+	ur.database.Where("user_id = ?", userId).Where("substance_id = ?", substanceId).Order("created_at DESC").Preload("Substance").Preload("User").Limit(pageSize).Offset(page * pageSize).Find(&records)
+
+	return
+}
+
 func (ur *recordRepository) GetAllInTimePeriod(userId uint, time time.Time) (records []models.Record, err error) {
 	ur.database.Where("user_id = ?", userId).Where("created_at >= ?", time).Preload("Substance").Preload("User").Find(&records)
 
