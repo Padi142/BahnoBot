@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -37,8 +38,6 @@ func BahnakCommand(name string, userUseCase user.UseCase) Command {
 
 		if err != nil {
 			log.Println(err.Error())
-		}
-		if profile == nil {
 			newProfile := models.User{ID: 0, DiscordID: userId, Username: i.Member.User.Username, PreferredSubstanceID: 1}
 			err = userUseCase.CreateUser(newProfile)
 			err = SendInteractionResponse(s, i, "Vytvarim bahnici ucet")
@@ -239,12 +238,35 @@ func LastBahneniCommand(name string, userUseCase user.UseCase, recordUseCase rec
 	return Command{Command: command, Handler: handler}
 }
 
-func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase record.UseCase) ComplexCommand {
+func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase record.UseCase, substanceUseCase substance.UseCase) ComplexCommand {
+	substances, err := substanceUseCase.GetSubstances()
+	if err != nil {
+		log.Println(err.Error())
+		return ComplexCommand{}
+	}
+	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(substances))
+
+	for i, sub := range substances {
+		choices[i] = &discordgo.ApplicationCommandOptionChoice{
+			Name:  sub.Label,
+			Value: sub.Value,
+		}
+	}
+
 	pageSize := 5
 	page := 1
 	command := discordgo.ApplicationCommand{
 		Name:        name,
 		Description: "Prints your records",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "substance",
+				Description: "Vyber si pro jakou substanci chces zobrazit historii",
+				Choices:     choices,
+				Required:    false,
+			},
+		},
 	}
 
 	backButton := discordgo.Button{
@@ -276,8 +298,36 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 			err = SendInteractionResponse(s, i, err.Error())
 			return
 		}
+		var records []models.Record
+		footer := discordgo.MessageEmbedFooter{}
 
-		records, _, err := recordUseCase.GetPagedRecords(usr.ID, page, pageSize)
+		options := i.ApplicationCommandData().Options
+
+		optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
+		for _, opt := range options {
+			optionMap[opt.Name] = opt
+		}
+
+		if opt, ok := optionMap["substance"]; ok {
+			substance := opt.StringValue()
+			sub, err := substanceUseCase.GetSubstanceByValue(substance)
+			if err != nil {
+				err = SendInteractionResponse(s, i, err.Error())
+				return
+			}
+			records, _, err = recordUseCase.GetPagedRecordsForSubstance(usr.ID, sub.ID, page, pageSize)
+			footer = discordgo.MessageEmbedFooter{
+				IconURL: GetUserAvatarUrl(i.Member.User),
+				Text:    i.Member.User.Username + " - " + i.Member.User.ID + " ~ " + sub.Value,
+			}
+		} else {
+			records, _, err = recordUseCase.GetPagedRecords(usr.ID, page, pageSize)
+			footer = discordgo.MessageEmbedFooter{
+				IconURL: GetUserAvatarUrl(i.Member.User),
+				Text:    i.Member.User.Username + " - " + i.Member.User.ID,
+			}
+		}
+
 		if err != nil {
 			err = SendInteractionResponse(s, i, err.Error())
 			return
@@ -305,6 +355,7 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 			Title:  "Zaznamy:",
 			Color:  0x00ff00,
 			Fields: fields,
+			Footer: &footer,
 			//Footer: &discordgo.MessageEmbedFooter{
 			//	Text: strconv.Itoa(page) + "/" + strconv.Itoa(int(math.Ceil(float64(count)/float64(pageSize)))),
 			//},
@@ -326,9 +377,28 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 		i *discordgo.InteractionCreate,
 	) {
 		if i.MessageComponentData().CustomID == forwardButton.CustomID {
+			message, err := s.ChannelMessage(i.ChannelID, i.Message.ID)
+			splitFooter := strings.Split(i.Message.Embeds[0].Footer.Text, " - ")
+			if !strings.Contains(splitFooter[len(splitFooter)-1], message.Interaction.User.ID) {
+
+				return
+			}
 			page++
-			usr, err := userUseCase.GetProfileByDiscordID(i.Message.Author.ID)
-			records, _, err := recordUseCase.GetPagedRecords(usr.ID, page, pageSize)
+			if err != nil {
+				err = SendInteractionResponse(s, i, err.Error())
+				return
+			}
+			usr, err := userUseCase.GetProfileByDiscordID(message.Interaction.User.ID)
+
+			var records []models.Record
+			splitSubstance := strings.Split(i.Message.Embeds[0].Footer.Text, " ~ ")
+
+			if len(splitSubstance) != 0 {
+				sub, _ := substanceUseCase.GetSubstanceByValue(splitSubstance[len(splitSubstance)-1])
+				records, _, err = recordUseCase.GetPagedRecordsForSubstance(usr.ID, sub.ID, page, pageSize)
+			} else {
+				records, _, err = recordUseCase.GetPagedRecords(usr.ID, page, pageSize)
+			}
 
 			if err != nil {
 				log.Println(err.Error())
@@ -360,6 +430,7 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 				Title:  "Zaznamy:",
 				Color:  0x00ff00,
 				Fields: fields,
+				Footer: i.Message.Embeds[0].Footer,
 				//Footer: &discordgo.MessageEmbedFooter{
 				//	Text: strconv.Itoa(page) + "/" + strconv.Itoa(int(math.Ceil(float64(count)/float64(pageSize)))),
 				//},
@@ -368,6 +439,7 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 			actionRow := discordgo.ActionsRow{
 				Components: []discordgo.MessageComponent{&backButton, &forwardButton},
 			}
+
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseUpdateMessage,
 				Data: &discordgo.InteractionResponseData{
@@ -388,9 +460,28 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 		i *discordgo.InteractionCreate,
 	) {
 		if i.MessageComponentData().CustomID == backButton.CustomID {
+			message, err := s.ChannelMessage(i.ChannelID, i.Message.ID)
+			splitFooter := strings.Split(i.Message.Embeds[0].Footer.Text, " - ")
+			if !strings.Contains(splitFooter[len(splitFooter)-1], message.Interaction.User.ID) {
+
+				return
+			}
 			page--
-			usr, err := userUseCase.GetProfileByDiscordID(i.Message.Author.ID)
-			records, _, err := recordUseCase.GetPagedRecords(usr.ID, page, pageSize)
+
+			if err != nil {
+				err = SendInteractionResponse(s, i, err.Error())
+				return
+			}
+			usr, err := userUseCase.GetProfileByDiscordID(message.Interaction.User.ID)
+			var records []models.Record
+			splitSubstance := strings.Split(i.Message.Embeds[0].Footer.Text, " ~ ")
+
+			if len(splitSubstance) != 0 {
+				sub, _ := substanceUseCase.GetSubstanceByValue(splitSubstance[len(splitSubstance)-1])
+				records, _, err = recordUseCase.GetPagedRecordsForSubstance(usr.ID, sub.ID, page, pageSize)
+			} else {
+				records, _, err = recordUseCase.GetPagedRecords(usr.ID, page, pageSize)
+			}
 
 			if err != nil {
 				log.Println(err.Error())
@@ -423,6 +514,7 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 				Title:  "Zaznamy:",
 				Color:  0x00ff00,
 				Fields: fields,
+				Footer: i.Message.Embeds[0].Footer,
 				//Footer: &discordgo.MessageEmbedFooter{
 				//	Text: strconv.Itoa(page) + "/" + strconv.Itoa(int(math.Ceil(float64(count)/float64(pageSize)))),
 				//},

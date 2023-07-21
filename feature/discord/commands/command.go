@@ -81,3 +81,7 @@ func GetTimeStamp(dateTime time.Time, stampType string) string {
 func LogCommandUse(userName, commandName string) {
 	log.Println("User " + userName + " ran command " + commandName)
 }
+
+func GetUserAvatarUrl(user *discordgo.User) string {
+	return "https://cdn.discordapp.com/avatars/" + user.ID + "/" + user.Avatar + ".png"
+}

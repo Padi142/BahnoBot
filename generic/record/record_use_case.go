@@ -44,6 +44,11 @@ func (us UseCase) GetAllRecords(userId uint) ([]models.Record, error) {
 func (us UseCase) GetPagedRecords(userId uint, page, pageSize int) ([]models.Record, int64, error) {
 	return us.recordRepository.GetAllPaged(userId, page, pageSize)
 }
+
+func (us UseCase) GetPagedRecordsForSubstance(userId, substanceId uint, page, pageSize int) ([]models.Record, int64, error) {
+	return us.recordRepository.GetAllPagedForSubstance(userId, substanceId, page, pageSize)
+}
+
 func (us UseCase) GetLastRecord(userId uint) (models.Record, error) {
 	return us.recordRepository.GetLast(userId)
 }
