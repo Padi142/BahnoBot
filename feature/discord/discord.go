@@ -54,6 +54,7 @@ func OpenBot(token string, appId string, db *gorm.DB) error {
 	err = GenericHandler(&service, appId)
 	err = UserHandler(&service, appId, userUseCase, substanceUseCase, recordUseCase)
 	err = SubstanceHandler(&service, appId, userUseCase, substanceUseCase)
+	err = ChartHandler(&service, appId, userUseCase, recordUseCase, substanceUseCase)
 
 	if err != nil {
 		return err
@@ -102,6 +103,12 @@ func SubstanceHandler(s *Service, appId string, userUseCase user.UseCase, substa
 	err := RegisterCommand(s, commands.SetPreferredSubstanceCommand("set_substance", substanceUseCase, userUseCase), appId)
 	err = RegisterCommand(s, commands.PrintAllSubstances("substances", substanceUseCase), appId)
 	err = RegisterCommand(s, commands.SubstanceInfo("bahnove_info", substanceUseCase), appId)
+
+	return err
+}
+
+func ChartHandler(s *Service, appId string, userUseCase user.UseCase, recodrUseCase record.UseCase, substanceUseCase substance.UseCase) error {
+	err := RegisterCommand(s, commands.ChartsCommand("graf", userUseCase, recodrUseCase, substanceUseCase), appId)
 
 	return err
 }
