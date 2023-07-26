@@ -26,7 +26,6 @@ COPY --from=builder /opt/venv /opt/venv
 
 COPY ./.env.example ./.env* /bahno_bot/
 COPY ./docs/ /bahno_bot/docs
-COPY ./requirements.txt ./requirements.txt
 COPY ./charts.py ./charts.py
 
 ENV PATH="/opt/venv/bin:$PATH"
