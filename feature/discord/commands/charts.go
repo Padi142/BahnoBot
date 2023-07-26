@@ -168,7 +168,7 @@ func ChartsCommand(name string, userUseCase user.UseCase, recordUseCase record.U
 			Files: []*discordgo.File{file},
 		})
 
-		err = SendInteractionResponse(s, i, "")
+		err = SendInteractionResponse(s, i, "🤓 👉🏿 📈")
 
 	}
 
