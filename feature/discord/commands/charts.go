@@ -77,6 +77,12 @@ func ChartsCommand(name string, userUseCase user.UseCase, recordUseCase record.U
 		s *discordgo.Session,
 		i *discordgo.InteractionCreate,
 	) {
+		//Only handle this command
+		if i.ApplicationCommandData().Name != command.Name {
+			return
+		}
+		LogCommandUse(i.Member.User.Username, command.Name)
+
 		usr, err := userUseCase.GetProfileByDiscordID(i.Member.User.ID)
 		if err != nil {
 			err = SendInteractionResponse(s, i, err.Error())
