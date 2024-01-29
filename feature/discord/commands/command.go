@@ -1,10 +1,11 @@
 package commands
 
 import (
-	"github.com/bwmarrin/discordgo"
 	"log"
 	"strconv"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 type Command struct {
@@ -18,6 +19,20 @@ type ComplexCommand struct {
 	Handler     func(s *discordgo.Session, i *discordgo.InteractionCreate)
 	Subhandlers []func(s *discordgo.Session, i *discordgo.InteractionCreate)
 	Name        string
+}
+
+func DeferInteractionResponse(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+	err := s.InteractionRespond(
+		i.Interaction,
+		&discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+		},
+	)
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func SendInteractionResponse(s *discordgo.Session, i *discordgo.InteractionCreate, message string) error {
@@ -49,6 +64,18 @@ func SendInteractionResponseComplex(s *discordgo.Session, i *discordgo.Interacti
 				Components: components,
 			},
 		},
+	)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func EditInteractionResponseComplex(s *discordgo.Session, i *discordgo.InteractionCreate, edit *discordgo.WebhookEdit) error {
+	_, err := s.InteractionResponseEdit(
+		i.Interaction,
+		edit,
 	)
 
 	if err != nil {
