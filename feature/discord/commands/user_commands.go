@@ -184,10 +184,17 @@ func BahnimCommand(name string, substanceUseCase substance.UseCase, userUseCase 
 }
 
 func LastBahneniCommand(name string, userUseCase user.UseCase, recordUseCase record.UseCase) Command {
-
 	command := discordgo.ApplicationCommand{
 		Name:        name,
-		Description: "Prints your last record",
+		Description: "Prints the last record",
+		Options: 	 []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionUser,
+				Name:        "bahnak",
+				Description: "Zjisti kdy se kdo naposledy zbahnil",
+				Required: 		false,
+			},
+		},
 	}
 
 	handler := func(
@@ -200,7 +207,19 @@ func LastBahneniCommand(name string, userUseCase user.UseCase, recordUseCase rec
 		}
 		LogCommandUse(i.Member.User.Username, command.Name)
 
-		usr, err := userUseCase.GetProfileByDiscordID(i.Member.User.ID)
+		options := i.ApplicationCommandData().Options
+		optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
+		for _, opt := range options {
+			optionMap[opt.Name] = opt
+		}
+
+		targetUserId := i.Member.User.ID
+
+		if opt, ok := optionMap["bahnak"]; ok {
+			targetUserId  = opt.UserValue(s).ID
+		}
+
+		usr, err := userUseCase.GetProfileByDiscordID(targetUserId)
 		if err != nil {
 			err = SendInteractionResponse(s, i, err.Error())
 			return
@@ -239,6 +258,7 @@ func LastBahneniCommand(name string, userUseCase user.UseCase, recordUseCase rec
 }
 
 func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase record.UseCase, substanceUseCase substance.UseCase) ComplexCommand {
+
 	substances, err := substanceUseCase.GetSubstances()
 	if err != nil {
 		log.Println(err.Error())
@@ -266,6 +286,11 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 				Choices:     choices,
 				Required:    false,
 			},
+			{
+				Type:        discordgo.ApplicationCommandOptionUser,
+				Name:        "bahnak",
+				Required: 		false,
+			},
 		},
 	}
 
@@ -274,12 +299,21 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 		Style:    discordgo.SuccessButton,
 		CustomID: "all_records_button_back",
 		Disabled: true,
+		Emoji: discordgo.ComponentEmoji{
+			ID: "1050012796227694703",
+			Name: "",
+		},
 	}
+
 	forwardButton := discordgo.Button{
 		Label:    ">",
 		Style:    discordgo.SuccessButton,
 		CustomID: "all_records_button_forward",
 		Disabled: false,
+		Emoji: discordgo.ComponentEmoji{
+			ID: "1050012796227694703",
+			Name: "",
+		},
 	}
 
 	handler := func(
@@ -293,19 +327,27 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 		}
 		LogCommandUse(i.Member.User.Username, command.Name)
 
-		usr, err := userUseCase.GetProfileByDiscordID(i.Member.User.ID)
-		if err != nil {
-			err = SendInteractionResponse(s, i, err.Error())
-			return
-		}
+		DeferInteractionResponse(s, i)
+
 		var records []models.Record
 		footer := discordgo.MessageEmbedFooter{}
 
 		options := i.ApplicationCommandData().Options
-
 		optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
 		for _, opt := range options {
 			optionMap[opt.Name] = opt
+		}
+
+		targetUserId := i.Member.User.ID
+
+		if opt, ok := optionMap["bahnak"]; ok {
+			targetUserId  = opt.UserValue(s).ID
+		}
+
+		usr, err := userUseCase.GetProfileByDiscordID(targetUserId)
+		if err != nil {
+			err = SendInteractionResponse(s, i, err.Error())
+			return
 		}
 
 		if opt, ok := optionMap["substance"]; ok {
@@ -366,12 +408,17 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 			Components: []discordgo.MessageComponent{&backButton, &forwardButton},
 		}
 
-		err = SendInteractionResponseComplex(s, i, embed, []discordgo.MessageComponent{&actionRow})
+		err = EditInteractionResponseComplex(s, i, &discordgo.WebhookEdit{
+			Embeds: &[]*discordgo.MessageEmbed{embed},
+			Components: &[]discordgo.MessageComponent{&actionRow},
+		})
+
 		if err != nil {
 			log.Println("Error executing discord command: " + name)
 			log.Println(err.Error())
 		}
 	}
+
 	forwardButtonHandler := func(
 		s *discordgo.Session,
 		i *discordgo.InteractionCreate,
@@ -449,12 +496,14 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 					},
 				},
 			})
+			
 			if err != nil {
 				log.Println("Error executing discord command: " + name)
 				log.Println(err.Error())
 			}
 		}
 	}
+
 	backButtonHandler := func(
 		s *discordgo.Session,
 		i *discordgo.InteractionCreate,
@@ -524,9 +573,11 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 				backButton.Disabled = true
 			}
 			forwardButton.Disabled = false
+
 			actionRow := discordgo.ActionsRow{
 				Components: []discordgo.MessageComponent{&backButton, &forwardButton},
 			}
+
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseUpdateMessage,
 				Data: &discordgo.InteractionResponseData{
@@ -536,6 +587,7 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 					},
 				},
 			})
+
 			if err != nil {
 				log.Println("Error executing discord command: " + name)
 				log.Println(err.Error())
@@ -548,6 +600,7 @@ func GetRecordsCommand(name string, userUseCase user.UseCase, recordUseCase reco
 			forwardButtonHandler, backButtonHandler,
 		}}
 }
+
 func MuzuBahnit(name string, userUseCase user.UseCase, recordUseCase record.UseCase, substanceUseCase substance.UseCase) Command {
 	substances, err := substanceUseCase.GetSubstances()
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"bahno_bot/generic/user"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"os"
 	"os/exec"
@@ -70,6 +71,12 @@ func ChartsCommand(name string, userUseCase user.UseCase, recordUseCase record.U
 				Choices:     timePeriodsChoices,
 				Required:    false,
 			},
+			{
+				Type: discordgo.ApplicationCommandOptionUser,
+				Name: "bahnak",
+				Description: "Vyber si koho chces zgrafovat",
+				Autocomplete: true,
+			},
 		},
 	}
 
@@ -83,16 +90,14 @@ func ChartsCommand(name string, userUseCase user.UseCase, recordUseCase record.U
 		}
 		LogCommandUse(i.Member.User.Username, command.Name)
 
-		usr, err := userUseCase.GetProfileByDiscordID(i.Member.User.ID)
+		err := DeferInteractionResponse(s, i)
+
 		if err != nil {
-			err = SendInteractionResponse(s, i, err.Error())
-			return
-		}
-		if err != nil {
-			return
+			log.Println(err)
 		}
 
 		options := i.ApplicationCommandData().Options
+
 		chosenSubstanceName := ""
 
 		optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
@@ -108,6 +113,21 @@ func ChartsCommand(name string, userUseCase user.UseCase, recordUseCase record.U
 
 		if opt, ok := optionMap["time_period"]; ok {
 			timePeriodDays = timePeriods[opt.IntValue()].DayCount
+		}
+
+		targetUserId := i.Member.User.ID
+
+		if opt, ok := optionMap["bahnak"]; ok {
+			targetUserId  = opt.UserValue(s).ID
+		}
+
+		usr, err := userUseCase.GetProfileByDiscordID(targetUserId)
+		if err != nil {
+			err = SendInteractionResponse(s, i, err.Error())
+			return
+		}
+		if err != nil {
+			return
 		}
 
 		data := ChartsData{
@@ -170,12 +190,15 @@ func ChartsCommand(name string, userUseCase user.UseCase, recordUseCase record.U
 			Reader: imageFile,
 		}
 
-		s.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{
+		err = EditInteractionResponseComplex(s, i, &discordgo.WebhookEdit{
 			Files: []*discordgo.File{file},
 		})
 
-		err = SendInteractionResponse(s, i, "🤓 👉🏿 📈")
+		if err != nil {
+			log.Println(err)
+		}
 
+		err = SendInteractionResponse(s, i, "🤓 👉🏿 📈 (něco se dojebalo)")
 	}
 
 	return Command{Command: command, Handler: handler}

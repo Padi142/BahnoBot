@@ -14,6 +14,8 @@ def generate_chart(data: Dict):
 
     df = pd.DataFrame(d) 
 
+    plt.figure(figsize=(7, 6))
+
     sns.lineplot(x='day', y='value', hue='variable', 
                 data=pd.melt(df, ['day']),
                  linewidth=2.3)
@@ -28,12 +30,14 @@ def generate_chart(data: Dict):
 
     # Rotate the date tick labels for better visibility (optional)
     plt.xticks(rotation=45)
-    plt.tick_params(axis='x', colors='grey')
-    plt.tick_params(axis='y', colors='grey')
+    plt.tick_params(axis='x', colors='white')
+    plt.tick_params(axis='y', colors='white')
 
-    plt.xlabel('X-axis Label', color='grey')
-    plt.ylabel('amount [g]', color='grey')
+    plt.xlabel('', color='white', labelpad=10)
+    plt.ylabel('amount [g]', color='white', labelpad=10)
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15), ncol=2)
+
+    plt.subplots_adjust(bottom=0.2)
 
     plt.savefig("output.png", transparent=True)
 
