@@ -12,11 +12,11 @@ RUN pip install -r requirements.txt
 
 RUN go mod tidy
 RUN go build -o /build/bahno_bot
-RUN go get github.com/swaggo/swag/cmd/swag@v1.16.1
-RUN go get github.com/swaggo/swag/gen@v1.16.1
-RUN go install github.com/swaggo/swag/cmd/swag
+# RUN go get github.com/swaggo/swag/cmd/swag@v1.16.1
+# RUN go get github.com/swaggo/swag/gen@v1.16.1
+# RUN go install github.com/swaggo/swag/cmd/swag
 
-RUN swag init
+# RUN swag init
 
 FROM debian:bullseye-slim as final
 WORKDIR /bahno_bot

@@ -213,13 +213,13 @@ func LastBahneniCommand(name string, userUseCase user.UseCase, recordUseCase rec
 			optionMap[opt.Name] = opt
 		}
 
-		targetUserId := i.Member.User.ID
+		targetUser := i.Member.User
 
 		if opt, ok := optionMap["bahnak"]; ok {
-			targetUserId  = opt.UserValue(s).ID
+			targetUser  = opt.UserValue(s)
 		}
 
-		usr, err := userUseCase.GetProfileByDiscordID(targetUserId)
+		usr, err := userUseCase.GetProfileByDiscordID(targetUser.ID)
 		if err != nil {
 			err = SendInteractionResponse(s, i, err.Error())
 			return
@@ -249,6 +249,10 @@ func LastBahneniCommand(name string, userUseCase user.UseCase, recordUseCase rec
 					Value:  fmt.Sprintf("%.2fg", rec.Amount),
 					Inline: true,
 				},
+			},
+			Footer: &discordgo.MessageEmbedFooter{
+				IconURL: GetUserAvatarUrl(targetUser),
+				Text:    targetUser.Username + " ~ " +  rec.Substance.Label,
 			},
 		}
 
